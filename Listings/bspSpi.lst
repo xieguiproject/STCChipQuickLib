@@ -1,0 +1,56 @@
+C51 COMPILER V9.54   BSPSPI                                                                01/21/2019 13:39:55 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPSPI
+OBJECT MODULE PLACED IN .\Objects\bspSpi.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspSpi.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\bspSpi.lst) TABS(2) OBJECT(.\Objects\bspSpi.obj)
+
+line level    source
+
+   1          #include "bspSpi.h"
+*** ERROR C141 IN LINE 13 OF Src\bspWroom-02.h: syntax error near 'UsartInfo'
+*** ERROR C129 IN LINE 13 OF Src\bspWroom-02.h: missing ';' before '*'
+   2          
+   3          void bspSpiInit()
+   4          {
+   5            SPDAT = 0;          //初始化SPI数据
+   6            SPSTAT = SPIF | WCOL;   //清除SPI状态位
+   7            SPCTL = SPEN | MSTR;    //主机模式,并使能，速度设置
+   8            IE2 |= ESPI;
+   9          }
+  10          
+  11          void bspSpiInterrupt() interrupt 9 using 1 
+  12          {
+  13              SPSTAT = SPIF | WCOL;       //清除SPI状态位
+  14              //接受到的数据直接通过串口送出去
+  15              //BspUsartSendByte(SPDAT);
+  16              SPISS = 1;                  //拉高从机的SS
+  17          }
+  18          void bspSpiSendByte(uint8_t Dat)
+  19          {
+  20            SPDAT = Dat;            //触发SPI发送数据
+  21            _nop_();
+  22            _nop_();
+  23          }
+  24          void bspSpiSendBuff(uint8_t *Buff,uint16_t uiLen)
+  25          {
+  26            uint16_t uiLoop = 0;
+  27            if(uiLen == 0)
+  28            {
+  29              while (*Buff)
+  30              {
+  31                  //BspUsartSendByte(*Buff++); 
+  32              }
+  33            }
+  34            else
+  35            {
+  36              while(uiLoop < uiLen);
+  37              {
+  38                //bspSpiSendByte(Buff[uiLoop]);
+  39                uiLoop++;
+  40              }
+  41            }
+  42          }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  2 ERROR(S)

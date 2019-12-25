@@ -1,0 +1,33 @@
+<NotepadPlus>
+    <Project name="SmartWindow">
+        <File name="Src\bspCCPInterrupt.c" />
+        <File name="Src\bspCCPInterrupt.h" />
+        <File name="Src\bspDataType.h" />
+        <File name="Src\bspEspAtWifi.c" />
+        <File name="Src\bspEspAtWifi.h" />
+        <File name="Src\bspGpioLib.c" />
+        <File name="Src\bspGpioLib.h" />
+        <File name="Src\bspKeyScanf.c" />
+        <File name="Src\bspKeyScanf.h" />
+        <File name="Src\bspLed.c" />
+        <File name="Src\bspLed.h" />
+        <File name="Src\bspPwm.c" />
+        <File name="Src\bspPwm.h" />
+        <File name="Src\bspSpi.c" />
+        <File name="Src\bspSpi.h" />
+        <File name="Src\bspSpiWifi.c" />
+        <File name="Src\bspSpiWifi.h" />
+        <File name="Src\bspTimer.c" />
+        <File name="Src\bspTimer.h" />
+        <File name="Src\bspUsart.c" />
+        <File name="Src\bspUsart.h" />
+        <File name="Src\bsp_Epprom.c" />
+        <File name="Src\bsp_Epprom.h" />
+        <File name="Src\CpuCfg.h" />
+        <File name="Src\guilib ReadMe.txt" />
+        <File name="Src\main.c" />
+        <File name="Src\Main.h" />
+        <File name="Src\MotoTest.c" />
+        <File name="Src\Protocol.h" />
+    </Project>
+</NotepadPlus>

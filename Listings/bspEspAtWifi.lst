@@ -1,0 +1,794 @@
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPESPATWIFI
+OBJECT MODULE PLACED IN .\Objects\bspEspAtWifi.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspEspAtWifi.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Libraries\STC
+                    -15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bs
+                    -pEspAtWifi.lst) TABS(2) OBJECT(.\Objects\bspEspAtWifi.obj)
+
+line level    source
+
+   1          /******************************************************************************
+   2          
+   3                            °æÈ¨ËùÓÐ (C), 2001-2011, XXXXX ¼¼ÊõÓÐÏÞ¹«Ë¾                  
+   4          
+   5           ******************************************************************************
+   6            ÎÄ ¼þ Ãû   : bspEspAtWifi.c
+   7            °æ ±¾ ºÅ   : ³õ¸å
+   8            ×÷    Õß   : Gavinx
+   9            Éú³ÉÈÕÆÚ   : 2019Äê4ÔÂ3ÈÕ ÐÇÆÚÈý
+  10            ×î½üÐÞ¸Ä   :
+  11            ¹¦ÄÜÃèÊö   : ESP8266WIFIÄ£¿é£¬ATÖ¸Áî¿ØÖÆÀàÐÍWIFIÄ£¿é
+  12            º¯ÊýÁÐ±í   :
+  13                        bspCfgWifiInfo
+  14                        bspEspAtWifiCheckConnectCb
+  15                        bspEspAtWifiCheckConnectSeverState
+  16                        bspEspAtWifiCleanRecvBuf
+  17                        bspEspAtWifiConnectServer
+  18                        bspEspAtWifiConnectWifi
+  19                        bspEspAtWifiCreateFreeWifiAp
+  20                        bspEspAtWifiFindStr
+  21                        bspEspAtWifiHardwareRest
+  22                        bspEspAtWifiInit
+  23                        bspEspAtWifiListWifiAp
+  24                        bspEspAtWifiQuitTrans
+  25                        bspEspAtWifiRecvData
+  26                        bspEspAtWifiSendCmd
+  27                        bspEspAtWifiSetWorkMode
+  28                        bspEspAtWifiSoftRest
+  29                        bspEspAtWifiTcpMux
+  30                        bspEspAtWifiTest
+  31                        bspEspAtWifiTransBeginSend
+  32                        bspEspAtWifiTransMode
+  33                        bspEspWifiConnectUdpServer
+  34                        WifiTest
+  35            ÐÞ¸ÄÀúÊ·   :
+  36            1.ÈÕ    ÆÚ   : 2019Äê4ÔÂ3ÈÕ ÐÇÆÚÈý
+  37              ×÷    Õß   : Gavinx
+  38              ÐÞ¸ÄÄÚÈÝ   : ´´½¨ÎÄ¼þ
+  39          
+  40          ******************************************************************************/
+  41          
+  42          /*----------------------------------------------*
+  43           * °üº¬Í·ÎÄ¼þ                                   *
+  44           *----------------------------------------------*/
+  45          #include "bspEspAtWifi.h"
+*** WARNING C323 IN LINE 25 OF Src\bspUsart.h: newline expected, extra characters found
+*** WARNING C323 IN LINE 12 OF Src\bspEspAtWifi.h: newline expected, extra characters found
+*** WARNING C323 IN LINE 64 OF Src\bspEspAtWifi.h: newline expected, extra characters found
+  46          
+  47          /*----------------------------------------------*
+  48           * Íâ²¿±äÁ¿ËµÃ÷                                 *
+  49           *----------------------------------------------*/
+  50          
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 2   
+
+  51          /*----------------------------------------------*
+  52           * Íâ²¿º¯ÊýÔ­ÐÍËµÃ÷                             *
+  53           *----------------------------------------------*/
+  54          
+  55          /*----------------------------------------------*
+  56           * ÄÚ²¿º¯ÊýÔ­ÐÍËµÃ÷                             *
+  57           *----------------------------------------------*/
+  58          
+  59          /*----------------------------------------------*
+  60           * È«¾Ö±äÁ¿                                     *
+  61           *----------------------------------------------*/
+  62            
+  63          #ifdef STC_15WXX || STC_15FXX || STC_89CXX
+*** WARNING C323 IN LINE 63 OF Src\bspEspAtWifi.c: newline expected, extra characters found
+  64            EspAtWifi xdata mdEspAtWifi;
+  65          #else
+                EspAtWifi  mdEspAtWifi;
+              #endif
+  68          
+  69          /*----------------------------------------------*
+  70           * Ä£¿é¼¶±äÁ¿                                   *
+  71           *----------------------------------------------*/
+  72          
+  73          /*----------------------------------------------*
+  74           * ³£Á¿¶¨Òå                                     *
+  75           *----------------------------------------------*/
+  76          
+  77          /*----------------------------------------------*
+  78           * ºê¶¨Òå                                       *
+  79           *----------------------------------------------*/
+  80          
+  81          
+  82          /*****************************************************************************
+  83           º¯ Êý Ãû  : bspEspAtWifiInit
+  84           ¹¦ÄÜÃèÊö  : Ä£Ê½³õÊ¼»¯,×èÈûµ÷ÓÃ
+  85           ÊäÈë²ÎÊý  : ÎÞ
+  86           Êä³ö²ÎÊý  : ÎÞ
+  87           ·µ »Ø Öµ  : 
+  88           µ÷ÓÃº¯Êý  : 
+  89           ±»µ÷º¯Êý  : 
+  90           
+  91           ÐÞ¸ÄÀúÊ·      :
+  92            1.ÈÕ    ÆÚ   : 2019Äê4ÔÂ3ÈÕ ÐÇÆÚÈý
+  93              ×÷    Õß   : Gavinx
+  94              ÐÞ¸ÄÄÚÈÝ   : ÐÂÉú³Éº¯Êý
+  95          
+  96          *****************************************************************************/
+  97          void bspEspAtWifiInit()
+  98          {
+  99   1          uint8_t uiTryCount = 0;
+ 100   1          uint8_t uiTryTotalCount = 0;
+ 101   1        
+ 102   1          BspUsartInit(2,115200);
+ 103   1        Timer3Init();//¶¨Ê±Æ÷³õÊ¼»¯ 50ms
+ 104   1        
+ 105   1          mdEspAtWifi.usart = WITI_BIND_USART;
+ 106   1          
+ 107   1          logMsg(RM_RUN,"Wifi Mode Begin Init\r\n",0,0,0,0,0,0);
+ 108   1      EspModeInit:
+ 109   1          
+ 110   1          while(bspEspAtWifiTest())//¼ì²âÄ£¿éÊÇ·ñÊÜ¿ØÖÆ£¬Èç¹û²»ÊÇÔò½øÐÐÖØÆô
+ 111   1          {
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 3   
+
+ 112   2              bspEspAtWifiQuitTrans();
+ 113   2              bspEspAtWifiSendCmd("AT+CIPMODE=0","OK",NULL,20);
+ 114   2              DelayMs(1000);
+ 115   2              uiTryCount++;
+ 116   2              if(uiTryCount > 5)
+ 117   2              {
+ 118   3                  logMsg(RM_RUN,"Wifi Mode Will Reboot\r\n",0,0,0,0,0,0);
+ 119   3                  bspEspAtWifiSoftRest();//Èí¼þ¸´Î»£¬Èí¼þ¸´Î»ºóÒÀÈ»²»ÄÜÁ¬½ÓÔò·ÅÆúwifi¿ØÖÆ¹¦ÄÜ
+ 120   3                  DelayMs(1000);
+ 121   3                  DelayMs(1000);
+ 122   3                  uiTryCount = 0;
+ 123   3            uiTryTotalCount++;
+ 124   3            if(uiTryTotalCount > 5)
+ 125   3            {
+ 126   4              mdEspAtWifi.uiWifiNetStates = NoWifiNode;//ÎÞ·¨Ê¶±ðwifiÄ£¿é
+ 127   4            }
+ 128   3                  goto EspModeInit;
+ 129   3              }
+ 130   2          }
+ 131   1          
+ 132   1          logMsg(RM_RUN,"Wifi Mode Is OnLine\r\n",0,0,0,0,0,0);
+ 133   1          /*¹Ø±Õ»ØÏÔÄ£Ê½*/
+ 134   1          while(bspEspAtWifiSendCmd("ATE0","OK",NULL,50));
+ 135   1          
+ 136   1          bspEspAtWifiSetWorkMode(Station);//StationÄ£Ê½
+ 137   1          bspEspAtWifiSoftRest();//Èí¼þ¸´Î»
+ 138   1      
+ 139   1      #ifndef DEBUG_WIFI_DB
+ 140   1          bspEspAtWifiConnectWifi("Xiaomi_1F14","11111111");
+ 141   1      
+ 142   1          logMsg(RM_RUN,"Wifi Connect Is OnLine\r\n",0,0,0,0,0,0);
+ 143   1          bspEspAtWifiTcpMux(0);//*ÉèÖÃÎªµ¥Á¬½Ó*/
+ 144   1      
+ 145   1        
+ 146   1          bspEspAtWifiConnectServer("192.168.31.212","8081");
+ 147   1          logMsg(RM_RUN,"Server Is Connnect\r\n",0,0,0,0,0,0);
+ 148   1          //½øÈëÍ¸´«Ä£Ê½
+ 149   1          bspEspAtWifiTransBeginSend();//½øÈë´«ÊäÄ£Ê½
+ 150   1          bspEspAtWifiTransMode();
+ 151   1        OpenLed(LED2);
+ 152   1      #endif
+ 153   1      }
+ 154          /*****************************************************************************
+ 155           * º¯ Êý Ãû  : bspEspAtWifiCleanRecvBuf
+ 156           * ¸º Ôð ÈË  : xiegui
+ 157           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 158           * º¯Êý¹¦ÄÜ  : Çå³ý½ÓÊÜ»º´æ
+ 159           * ÊäÈë²ÎÊý  : ÎÞ
+ 160           * Êä³ö²ÎÊý  : ÎÞ
+ 161           * ·µ »Ø Öµ  : 
+ 162           * µ÷ÓÃ¹ØÏµ  : 
+ 163           * Æä    Ëü  : 
+ 164          
+ 165          *****************************************************************************/
+ 166          int8_t bspEspAtWifiCleanRecvBuf()
+ 167          {
+ 168   1          memset(mdEspAtWifi.usart->UsartBuf,0,sizeof(mdEspAtWifi.usart->UsartBuf));
+ 169   1          mdEspAtWifi.usart->UsartCount = 0;
+ 170   1          mdEspAtWifi.usart->UsartFlage = 0;
+ 171   1          return True;
+ 172   1      }
+ 173          /*****************************************************************************
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 4   
+
+ 174           * º¯ Êý Ãû  : bspEspAtWifiSendCmd
+ 175           * ¸º Ôð ÈË  : xiegui
+ 176           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ20ÈÕ
+ 177           * º¯Êý¹¦ÄÜ  : ·¢ËÍÃüÁî²¢¼àÌý·µ»ØÖµ,ÓÃ»§ÔÙÒÆÖ²Ê±Ö»ÐèÒªÒÆÖ²Õâ¸ö¹Ø¼ü½Ó¿Ú¾Í¿ÉÒÔÁË¡£
+ 178           * ÊäÈë²ÎÊý  : ÎÞ
+ 179           * Êä³ö²ÎÊý  : ÎÞ
+ 180           * ·µ »Ø Öµ  : 
+ 181           * µ÷ÓÃ¹ØÏµ  : 
+ 182           * Æä    Ëü  : 
+ 183          
+ 184          *****************************************************************************/
+ 185          int8_t bspEspAtWifiSendCmd(uint8_t *cmd,uint8_t *ack,AtCmdCbFunc cb,uint16_t waittime)
+ 186          {
+ 187   1          uint8_t xdata CmdBuf[128] = {0};
+ 188   1          uint8_t res = True;
+ 189   1          char *Poite = NULL;
+ 190   1          OpenLed(LED2);
+ 191   1          memset(CmdBuf,0,sizeof(CmdBuf));
+ 192   1          bspEspAtWifiCleanRecvBuf();
+ 193   1          mdEspAtWifi.usart->UsartCount = 0;
+ 194   1        mdEspAtWifi.usart->UsartFlage = 0;
+ 195   1          
+ 196   1          sprintf(CmdBuf,"%s\r\n",cmd);
+ 197   1          BspUsartSendStr(mdEspAtWifi.usart->uiSerialNum,CmdBuf);
+ 198   1          DelayMs(50);
+ 199   1          if(ack && waittime)
+ 200   1          {
+ 201   2              while(--waittime)
+ 202   2              {
+ 203   3                  DelayMs(10);
+ 204   3                  //Èç¹û½ÓÊÜµ½ÐÂÊý¾Ý£¬
+ 205   3                  if(mdEspAtWifi.usart->UsartFlage & USART_RECV_OVER)
+ 206   3                  {
+ 207   4                      mdEspAtWifi.usart->UsartBuf[mdEspAtWifi.usart->UsartCount] = 0;//Ìí¼Ó×Ö·û´®ÀàÐÍµÄÇ¿ÖÆ½áÊø·
+             -û
+ 208   4                      if((Poite = strstr(mdEspAtWifi.usart->UsartBuf,ack)) != NULL)
+ 209   4                      {
+ 210   5                          printf("ack:%s\r\n",(uint8_t*)Poite);
+ 211   5                          break;
+ 212   5                      }
+ 213   4                      mdEspAtWifi.usart->UsartCount = 0;
+ 214   4                      mdEspAtWifi.usart->UsartFlage = 0;
+ 215   4                  }
+ 216   3              }
+ 217   2              if(waittime == 0)
+ 218   2                  res = False;
+ 219   2              //³¬Ê±ÍË³ö
+ 220   2          }
+ 221   1        else if(waittime)
+ 222   1        {
+ 223   2          while(--waittime)
+ 224   2              {
+ 225   3                  DelayMs(10);
+ 226   3                  //Èç¹û½ÓÊÜµ½ÐÂÊý¾Ý£¬
+ 227   3                  if(mdEspAtWifi.usart->UsartFlage & USART_RECV_OVER)
+ 228   3                  {
+ 229   4                    mdEspAtWifi.usart->UsartBuf[mdEspAtWifi.usart->UsartCount] = 0;//Ìí¼Ó×Ö·û´®ÀàÐÍµÄÇ¿ÖÆ½áÊø·û
+ 230   4                      return cb();
+ 231   4                      break;
+ 232   4                  }
+ 233   3            
+ 234   3            mdEspAtWifi.usart->UsartCount = 0;
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 5   
+
+ 235   3            mdEspAtWifi.usart->UsartFlage = 0;
+ 236   3              }
+ 237   2              if(waittime == 0)
+ 238   2                  res = False;
+ 239   2              //³¬Ê±ÍË³ö
+ 240   2        }
+ 241   1        CloseLed(LED2); 
+ 242   1          return res;
+ 243   1      }
+ 244          /*****************************************************************************
+ 245           * º¯ Êý Ãû  : bspEspAtWifiSoftRest
+ 246           * ¸º Ôð ÈË  : xiegui
+ 247           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 248           * º¯Êý¹¦ÄÜ  : Èí¼þ¸´Î»
+ 249           * ÊäÈë²ÎÊý  : ÎÞ
+ 250           * Êä³ö²ÎÊý  : ÎÞ
+ 251           * ·µ »Ø Öµ  : 
+ 252           * µ÷ÓÃ¹ØÏµ  : 
+ 253           * Æä    Ëü  : 
+ 254          
+ 255          *****************************************************************************/
+ 256          int8_t bspEspAtWifiSoftRest()
+ 257          {
+ 258   1          return bspEspAtWifiSendCmd("AT+RST","OK",NULL,50);
+ 259   1      }
+ 260          /*****************************************************************************
+ 261           * º¯ Êý Ãû  : bspEspAtWifiHardwareRest
+ 262           * ¸º Ôð ÈË  : xiegui
+ 263           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 264           * º¯Êý¹¦ÄÜ  : Ó²¼þÖØÆô
+ 265           * ÊäÈë²ÎÊý  : ÎÞ
+ 266           * Êä³ö²ÎÊý  : ÎÞ
+ 267           * ·µ »Ø Öµ  : 
+ 268           * µ÷ÓÃ¹ØÏµ  : 
+ 269           * Æä    Ëü  : 
+ 270          
+ 271          *****************************************************************************/
+ 272          int8_t bspEspAtWifiHardwareRest()
+ 273          {
+ 274   1          return True;
+ 275   1      }
+ 276          /*****************************************************************************
+ 277           * º¯ Êý Ãû  : bspEspAtWifiTest
+ 278           * ¸º Ôð ÈË  : xiegui
+ 279           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 280           * º¯Êý¹¦ÄÜ  : ²âÊÔÄ£¿éÊÇ·ñÊÜ¿ØÖÆ
+ 281           * ÊäÈë²ÎÊý  : ÎÞ
+ 282           * Êä³ö²ÎÊý  : ÎÞ
+ 283           * ·µ »Ø Öµ  : 
+ 284           * µ÷ÓÃ¹ØÏµ  : 
+ 285           * Æä    Ëü  : 
+ 286          
+ 287          *****************************************************************************/
+ 288          int8_t bspEspAtWifiTest()
+ 289          {
+ 290   1          return bspEspAtWifiSendCmd("AT","OK",NULL,30);
+ 291   1      }
+ 292          /*****************************************************************************
+ 293           * º¯ Êý Ãû  : bspEspAtWifiQuitTrans
+ 294           * ¸º Ôð ÈË  : xiegui
+ 295           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 296           * º¯Êý¹¦ÄÜ  : ÍË³ö´«ÊäÄ£Ê½
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 6   
+
+ 297           * ÊäÈë²ÎÊý  : ÎÞ
+ 298           * Êä³ö²ÎÊý  : ÎÞ
+ 299           * ·µ »Ø Öµ  : 
+ 300           * µ÷ÓÃ¹ØÏµ  : 
+ 301           * Æä    Ëü  : 
+ 302          
+ 303          *****************************************************************************/
+ 304          int8_t bspEspAtWifiQuitTrans()
+ 305          {
+ 306   1          BspUsartSendByte(mdEspAtWifi.usart->uiSerialNum,'+');
+ 307   1          BspUsartSendByte(mdEspAtWifi.usart->uiSerialNum,'+');
+ 308   1          BspUsartSendByte(mdEspAtWifi.usart->uiSerialNum,'+');
+ 309   1          
+ 310   1          DelayMs(1000);
+ 311   1          
+ 312   1          return bspEspAtWifiSendCmd("AT","OK",NULL,50);
+ 313   1      }
+ 314          //½øÈëÍ¸´«Ä£Ê½
+ 315          int8_t bspEspAtWifiTransMode()
+ 316          {
+ 317   1        char xdata CmdBuf[50];
+ 318   1        sprintf((char*)CmdBuf,"AT+CIPSEND");
+ 319   1        
+ 320   1        return bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,800);
+ 321   1      }
+ 322          //¿ª·¢Í¸´«
+ 323          int8_t bspEspAtWifiTransBeginSend()
+ 324          {
+ 325   1        char xdata CmdBuf[50];
+ 326   1        sprintf((char*)CmdBuf,"AT+CIPMODE=1");
+ 327   1        
+ 328   1        return bspEspAtWifiSendCmd((uint8_t *)CmdBuf,">",NULL,800);
+ 329   1      }
+ 330          int8_t bspEspAtWifiConnectWifi(uint8_t *WifiName,uint8_t *Password)
+ 331          {
+ 332   1          char xdata CmdBuf[50];
+ 333   1        uint8_t uiTryCount = 0;
+ 334   1          sprintf((char*)CmdBuf,"AT+CWJAP=\"%s\",\"%s\"",WifiName,Password);
+ 335   1          
+ 336   1          while(bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"WIFI GOT IP",NULL,1200))
+ 337   1        {
+ 338   2          uiTryCount++;
+ 339   2          DelayMs(1000);
+ 340   2          if(uiTryCount > 20)
+ 341   2          {
+ 342   3            break;
+ 343   3            mdEspAtWifi.uiWifiNetStates = WifiDisconnect;//wifiÁ¬½ÓÊ§°Ü
+ 344   3          }
+ 345   2        }
+ 346   1          
+ 347   1          return 1;
+ 348   1      }
+ 349          /*****************************************************************************
+ 350           * º¯ Êý Ãû  : bspEspAtWifiConnectServer
+ 351           * ¸º Ôð ÈË  : xiegui
+ 352           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 353           * º¯Êý¹¦ÄÜ  : Á¬½Ótcpµ½Ö¸¶¨·þÎñÆ÷
+ 354           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 355                          1£ºµ¥Á¬½Ó
+ 356           * Êä³ö²ÎÊý  : ÎÞ
+ 357           * ·µ »Ø Öµ  : 
+ 358           * µ÷ÓÃ¹ØÏµ  : 
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 7   
+
+ 359           * Æä    Ëü  : 
+ 360          
+ 361          *****************************************************************************/
+ 362          int8_t bspEspAtWifiConnectServer(uint8_t *ServerIp,uint8_t *Port)
+ 363          {
+ 364   1          char xdata CmdBuf[50] = {0};
+ 365   1          sprintf((char*)CmdBuf,"AT+CIPSTART=\"TCP\",\"%s\",%s",ServerIp,(uint8_t*)Port);    //ÅäÖÃÄ¿±êTCP·þÎñÆ÷
+ 366   1      
+ 367   1          while(bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,800))
+ 368   1          {
+ 369   2            if(strstr(mdEspAtWifi.usart->UsartBuf,"ALREADY CONNECTED")!= NULL)
+ 370   2              {
+ 371   3                  mdEspAtWifi.uiWifiNetStates = ServerConnectOk;
+ 372   3                logMsg(RM_RUN,"Server Reconnected\r\n",0,0,0,0,0,0);
+ 373   3                break;
+ 374   3              }
+ 375   2            mdEspAtWifi.uiWifiNetStates |= ServerConnectError;
+ 376   2              logMsg(RM_RUN,"Server Connect Error\r\n",0,0,0,0,0,0);
+ 377   2              DelayMs(1000);
+ 378   2              logMsg(RM_RUN,"Server Reconnect Ing\r\n",0,0,0,0,0,0);
+ 379   2          mdEspAtWifi.uiWifiNetStates |= ServerConnecting;
+ 380   2          }   
+ 381   1          return 1;
+ 382   1      }
+ 383          /*****************************************************************************
+ 384           * º¯ Êý Ãû  : bspEspAtWifiCheckConnectCb
+ 385           * ¸º Ôð ÈË  : xiegui
+ 386           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 387           * º¯Êý¹¦ÄÜ  : ½ÓÊÜµ½Êý¾Ý»Øµ÷º¯Êý£¬ÊÊºÏÓÚ´¦ÀíÓÐ´óÁ¿Êý¾Ý·µ»ØµÄ¹ý³Ì¡£
+ 388           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 389                          1£ºµ¥Á¬½Ó
+ 390           * Êä³ö²ÎÊý  : ÎÞ
+ 391           * ·µ »Ø Öµ  : 
+ 392           * µ÷ÓÃ¹ØÏµ  : 
+ 393           * Æä    Ëü  : 
+ 394          
+ 395          *****************************************************************************/
+ 396          int8_t bspEspAtWifiCheckConnectCb(void)
+ 397          {
+ 398   1        char *Poite = NULL;
+ 399   1        
+ 400   1        if(strstr(mdEspAtWifi.usart->UsartBuf,"STATUS:3") != NULL)
+ 401   1          {
+ 402   2              return  3;
+ 403   2          }
+ 404   1        else if(strstr(mdEspAtWifi.usart->UsartBuf,"STATUS:4") != NULL)
+ 405   1        {
+ 406   2          return 4;
+ 407   2        }
+ 408   1        else if(strstr(mdEspAtWifi.usart->UsartBuf,"STATUS:2") != NULL)
+ 409   1        {
+ 410   2          return 2;
+ 411   2        }
+ 412   1        else
+ 413   1        {
+ 414   2          return False;
+ 415   2        }
+ 416   1      }
+ 417          /*****************************************************************************
+ 418           * º¯ Êý Ãû  : bspEspAtWifiCheckConnectSeverState
+ 419           * ¸º Ôð ÈË  : xiegui
+ 420           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 8   
+
+ 421           * º¯Êý¹¦ÄÜ  : ¼ì²âWiFiÄ£¿étcpÁ¬½Ó×´Ì¬
+ 422           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 423                          1£ºµ¥Á¬½Ó
+ 424           * Êä³ö²ÎÊý  : ÎÞ
+ 425           * ·µ »Ø Öµ  : 
+ 426           * µ÷ÓÃ¹ØÏµ  : 
+ 427           * Æä    Ëü  : 
+ 428          
+ 429          *****************************************************************************/
+ 430          int8_t bspEspAtWifiCheckConnectSeverState()
+ 431          {
+ 432   1        uint8_t ucLoop = 5;
+ 433   1        char xdata CmdBuf[50] = {0};
+ 434   1        //bspEspAtWifiCleanRecvBuf();
+ 435   1        
+ 436   1          sprintf((char*)CmdBuf,"AT+CIPSTATUS");    //ÅäÖÃÄ¿±êTCP·þÎñÆ÷
+ 437   1        
+ 438   1        return bspEspAtWifiSendCmd((uint8_t *)CmdBuf,NULL,bspEspAtWifiCheckConnectCb,500);
+ 439   1      }
+ 440          /*****************************************************************************
+ 441           * º¯ Êý Ãû  : bspEspAtWifiTcpMux
+ 442           * ¸º Ôð ÈË  : xiegui
+ 443           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 444           * º¯Êý¹¦ÄÜ  : µ¥Á¬½ÓºÍ¶àÁ¬½ÓÇÐ»»
+ 445           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 446                          1£ºµ¥Á¬½Ó
+ 447           * Êä³ö²ÎÊý  : ÎÞ
+ 448           * ·µ »Ø Öµ  : 
+ 449           * µ÷ÓÃ¹ØÏµ  : 
+ 450           * Æä    Ëü  : 
+ 451          
+ 452          *****************************************************************************/
+ 453          int8_t  bspEspAtWifiTcpMux(uint16_t Mode)
+ 454          {
+ 455   1          uint8_t xdata CmdBuf[30] = {0};
+ 456   1      #if 0
+                  if(Mode == 0)
+                  {
+                    sprintf(CmdBuf,"AT+CIPMUX=0");
+                  }
+                else if(Mode == 1)
+                {
+                  sprintf(CmdBuf,"AT+CIPMUX=1");
+                }
+              #else
+ 466   1        sprintf(CmdBuf,"AT+CIPMUX=%d",Mode);
+ 467   1        printf("CmdBuf:%s\r\n",CmdBuf);
+ 468   1      #endif
+ 469   1          while(bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,500))
+ 470   1          {
+ 471   2           DelayMs(500);
+ 472   2           return True;
+ 473   2        }
+ 474   1        return False;
+ 475   1      }
+ 476          int8_t bspEspAtWifiListWifiApCb(void)
+ 477          {
+ 478   1        char *Pointe = NULL;
+ 479   1        char *Pointe2 = NULL;
+ 480   1        uint16_t uiLoop = 0;
+ 481   1        uint16_t uiCount = 0;
+ 482   1        for(uiLoop = 0;uiLoop < RECV_MAX_LEN;uiLoop++)
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 9   
+
+ 483   1        {
+ 484   2          Pointe = bspEspAtWifiFindStr(mdEspAtWifi.usart->UsartBuf + uiLoop,"+CWLAP:");
+ 485   2          if(Pointe != NULL)
+ 486   2          {
+ 487   3            Pointe2= strstr(Pointe,")");
+ 488   3            *(Pointe2 + 1) = 0;
+ 489   3            printf("%s\r\n",Pointe);
+ 490   3            uiLoop += strlen(Pointe);
+ 491   3          }
+ 492   2          else
+ 493   2          {
+ 494   3            uiLoop += 1;
+ 495   3          }
+ 496   2        }
+ 497   1      }
+*** WARNING C173 IN LINE 497 OF Src\bspEspAtWifi.c: missing return-expression
+ 498          //²éÑ¯µ±Ç°»·¾³µÄWiFiÐÅºÅ
+ 499          int8_t bspEspAtWifiListWifiAp()
+ 500          {
+ 501   1        char xdata CmdBuf[50] = {0};
+ 502   1        
+ 503   1        sprintf((char*)CmdBuf,"AT+CWLAP");    //²éÑ¯wifi
+ 504   1       // usartflg = 1;
+ 505   1        bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,400);
+ 506   1        //usartflg = 0;
+ 507   1        bspEspAtWifiListWifiApCb();
+ 508   1      }
+*** WARNING C173 IN LINE 508 OF Src\bspEspAtWifi.c: missing return-expression
+ 509          char * bspEspAtWifiFindStr(char *String,char *cFindString)
+ 510          {
+ 511   1        char *Pointe = cFindString;
+ 512   1        uint8_t ucFlg = 0;
+ 513   1        uint16_t uiLoop = 0;
+ 514   1        uint16_t uiJoop = 0;
+ 515   1        for(uiLoop = 0;uiLoop < RECV_MAX_LEN;uiLoop++)
+ 516   1        {
+ 517   2          ucFlg = 0;
+ 518   2          uiJoop = 0;
+ 519   2          Pointe = cFindString;
+ 520   2          while(*Pointe != '\0')
+ 521   2          {
+ 522   3            if(String[uiLoop + uiJoop] != *Pointe)
+ 523   3            {
+ 524   4              ucFlg = 1;//ÓÐ´íÎó£¬¼ÌÐø²éÑ¯
+ 525   4              break;
+ 526   4            }
+ 527   3            uiJoop++;
+ 528   3            Pointe++;
+ 529   3          }
+ 530   2          if(ucFlg != 1)
+ 531   2          {
+ 532   3            return (char *)&String[uiLoop];
+ 533   3          } 
+ 534   2        }
+ 535   1        return NULL;
+ 536   1      }
+ 537          /*****************************************************************************
+ 538           * º¯ Êý Ãû  : bspEspAtWifiRecvData
+ 539           * ¸º Ôð ÈË  : xiegui
+ 540           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 541           * º¯Êý¹¦ÄÜ  : ·ÇÍ¸´«Ä£Ê½ÏÂµÄÊý¾Ý½ÓÊÜ
+ 542           * ÊäÈë²ÎÊý  : int8_t Mode  
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 10  
+
+ 543           * Êä³ö²ÎÊý  : ÎÞ
+ 544           * ·µ »Ø Öµ  : 
+ 545           * µ÷ÓÃ¹ØÏµ  : 
+ 546           * Æä    Ëü  : 
+ 547          
+ 548          *****************************************************************************/
+ 549          int8_t bspEspAtWifiRecvData(uint8_t WaitPort,uint8_t *RecvBuf,uint16_t RecvDatLen,uint16_t TimeOut)
+ 550          {
+ 551   1          char *IpdStr = NULL;
+ 552   1          char *IpdStr1 = NULL;
+ 553   1          uint16_t  RecvDatNum = 0;
+ 554   1          /*½ÓÊÜ×Ö·û¸öÊý*/
+ 555   1          uint8_t Temp[4] = {0};
+ 556   1          uint8_t RecvDatPort = 0;
+ 557   1          while(TimeOut--)
+ 558   1          {
+ 559   2              IpdStr = bspEspAtWifiFindStr(mdEspAtWifi.usart->UsartBuf,"+IPD,");
+ 560   2              if(IpdStr != NULL)
+ 561   2              {
+ 562   3                IpdStr += 5;
+ 563   3                  IpdStr1 = strstr(IpdStr,":");
+ 564   3                  if(IpdStr1 != NULL)
+ 565   3                  {
+ 566   4                      memcpy(Temp,IpdStr,(IpdStr1 - IpdStr));
+ 567   4                      RecvDatNum = atoi(Temp);
+ 568   4                          
+ 569   4                      IpdStr1+=1;
+ 570   4                      memset(RecvBuf,0,RecvDatLen);
+ 571   4                      if(RecvDatNum > 0)
+ 572   4                      {
+ 573   5                          printf("DATA:%d %s\r\n",RecvDatNum,IpdStr1);
+ 574   5                          if(RecvDatNum <= RecvDatLen)
+ 575   5                          {
+ 576   6                              memcpy(RecvBuf,IpdStr1,RecvDatNum);/*¿½±´Êý¾Ý*/
+ 577   6                              bspEspAtWifiCleanRecvBuf();//Çå³ý»º´æÇø
+ 578   6                              return RecvDatNum;
+ 579   6                          }
+ 580   5                          else
+ 581   5                          {
+ 582   6                              memcpy(RecvBuf,IpdStr1,RecvDatLen);/*¿½±´Êý¾Ý*/
+ 583   6                              bspEspAtWifiCleanRecvBuf();//Çå³ý»º´æÇø
+ 584   6                              return RecvDatLen;
+ 585   6                          }
+ 586   5                      }
+ 587   4                  }
+ 588   3              }
+ 589   2              DelayMs(1);
+ 590   2          }
+ 591   1          return 0;
+ 592   1      }
+*** WARNING C280 IN LINE 549 OF Src\bspEspAtWifi.c: 'WaitPort': unreferenced local variable
+ 593          /*****************************************************************************
+ 594           * º¯ Êý Ãû  : bspEspAtWifiSetWorkMode
+ 595           * ¸º Ôð ÈË  : xiegui
+ 596           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 597           * º¯Êý¹¦ÄÜ  : ÉèÖÃ¹¤×÷Ä£Ê½
+ 598           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 599           * Êä³ö²ÎÊý  : ÎÞ
+ 600           * ·µ »Ø Öµ  : 
+ 601           * µ÷ÓÃ¹ØÏµ  : 
+ 602           * Æä    Ëü  : 
+ 603          
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 11  
+
+ 604          *****************************************************************************/
+ 605          int8_t bspEspAtWifiSetWorkMode(uint16_t Mode)
+ 606          {
+ 607   1      
+ 608   1          char xdata CmdBuf[30] = {0};
+ 609   1      #if 0
+                  if(Mode == 1)
+                  {
+                  sprintf(CmdBuf,"AT+CWMODE=1");
+                }
+                else if(Mode == 2)
+                {
+                  sprintf(CmdBuf,"AT+CWMODE=2");
+                }
+                else if(Mode == 3)
+                {
+                  sprintf(CmdBuf,"AT+CWMODE=3");
+                }
+              #else
+ 623   1        sprintf(CmdBuf,"AT+CWMODE=%d",Mode);
+ 624   1      #endif
+ 625   1          return bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,50);
+ 626   1      }
+ 627          /*****************************************************************************
+ 628           * º¯ Êý Ãû  : bspEspAtWifiCreateFreeWifiAp
+ 629           * ¸º Ôð ÈË  : xiegui
+ 630           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 631           * º¯Êý¹¦ÄÜ  : µ¥Á¬½ÓºÍ¶àÁ¬½ÓÇÐ»»
+ 632           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 633                          1£ºµ¥Á¬½Ó
+ 634           * Êä³ö²ÎÊý  : ÎÞ
+ 635           * ·µ »Ø Öµ  : 
+ 636           * µ÷ÓÃ¹ØÏµ  : 
+ 637           * Æä    Ëü  : 
+ 638          
+ 639          *****************************************************************************/
+ 640          int8_t bspEspAtWifiCreateFreeWifiAp()
+ 641          {
+ 642   1        char xdata CmdBuf[50] = {0};
+ 643   1          
+ 644   1          sprintf(CmdBuf,"AT+CWSAP=\"SmartWindows\",\"SmartWindows\",10,0");
+ 645   1          
+ 646   1          return bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,50);
+ 647   1      }
+ 648          /*¼àÌýudp¹ã²¥ÐÅºÅ£¬*/
+ 649          int8_t bspEspWifiConnectUdpServer()
+ 650          {
+ 651   1        char xdata CmdBuf[50] = {0};
+ 652   1          
+ 653   1          sprintf(CmdBuf,"AT+CIPSTART=\"UDP\",\"255.255.255.255\",6000,1000,0");
+ 654   1        
+ 655   1          return bspEspAtWifiSendCmd((uint8_t *)CmdBuf,"OK",NULL,80);
+ 656   1      }
+ 657          /*****************************************************************************
+ 658           * º¯ Êý Ãû  : bspCfgWifiInfo
+ 659           * ¸º Ôð ÈË  : xiegui
+ 660           * ´´½¨ÈÕÆÚ  : 2019Äê1ÔÂ29ÈÕ
+ 661           * º¯Êý¹¦ÄÜ  : ÅäÖÃwifi
+ 662           * ÊäÈë²ÎÊý  : int8_t Mode  
+ 663                          1£ºµ¥Á¬½Ó
+ 664           * Êä³ö²ÎÊý  : ÎÞ
+ 665           * ·µ »Ø Öµ  : 
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 12  
+
+ 666           * µ÷ÓÃ¹ØÏµ  : 
+ 667           * Æä    Ëü  : 
+ 668          
+ 669          *****************************************************************************/
+ 670          int8_t bspCfgWifiInfo()
+ 671          {
+ 672   1          //1¡¢¼ì²âÄ£¿éÊÇ·ñÔÚÏß
+ 673   1          uint8_t uiTryCount = 0;
+ 674   1          BspUsartInit(2,9600);
+ 675   1          mdEspAtWifi.usart = WITI_BIND_USART;
+ 676   1          
+ 677   1          logMsg(RM_RUN,"Wifi Mode Begin Init\r\n",0,0,0,0,0,0);
+ 678   1      EspModeInit:
+ 679   1          
+ 680   1          while(bspEspAtWifiTest())//¼ì²âÄ£¿éÊÇ·ñÊÜ¿ØÖÆ£¬Èç¹û²»ÊÇÔò½øÐÐÖØÆô
+ 681   1          {
+ 682   2              bspEspAtWifiQuitTrans();
+ 683   2              bspEspAtWifiSendCmd("AT+CIPMODE=0","OK",NULL,20);
+ 684   2              DelayMs(1000);
+ 685   2              uiTryCount++;
+ 686   2              if(uiTryCount > 5)
+ 687   2              {
+ 688   3                  logMsg(RM_RUN,"Wifi Mode Will Reboot\r\n",0,0,0,0,0,0);
+ 689   3                  bspEspAtWifiSoftRest();//Èí¼þ¸´Î»£¬Èí¼þ¸´Î»ºóÒÀÈ»²»ÄÜÁ¬½ÓÔò·ÅÆúwifi¿ØÖÆ¹¦ÄÜ
+ 690   3                  DelayMs(1000);
+ 691   3                  DelayMs(1000);
+ 692   3                  DelayMs(1000);
+ 693   3                  DelayMs(1000);
+ 694   3                  uiTryCount = 0;
+ 695   3                  goto EspModeInit;
+ 696   3              }
+ 697   2          }
+ 698   1          logMsg(RM_RUN,"Wifi Mode Is OnLine\r\n",0,0,0,0,0,0);
+ 699   1          //2¡¢ÅäÖÃwifi¹¤×÷Ä£Ê½
+ 700   1          /*¹Ø±Õ»ØÏÔÄ£Ê½*/
+ 701   1          while(bspEspAtWifiSendCmd("ATE0","OK",NULL,50));
+ 702   1          
+ 703   1          bspEspAtWifiSetWorkMode(AP);//APÄ£Ê½
+ 704   1          bspEspAtWifiSoftRest();//Èí¼þ¸´Î»
+ 705   1          DelayMs(1000);
+ 706   1          
+ 707   1          //bspEspAtWifiCleanRecvBuf();
+ 708   1        bspEspAtWifiTcpMux(0);
+ 709   1          //3¡¢·¢Éäwifi
+ 710   1          bspEspAtWifiCreateFreeWifiAp();
+ 711   1        DelayMs(1000);
+ 712   1        DelayMs(1000);
+ 713   1          //4¡¢½ÓÊÜ¹ã²¥ÐÅºÅ
+ 714   1          while(bspEspWifiConnectUdpServer());
+ 715   1          //5¡¢´æ´¢wifiÕË»§ºÍÃÜÂë
+ 716   1          
+ 717   1          //6¡¢ÖØÆôÏµÍ³£¨»òÕßÖØÐÂÁ¬½Ówifi£©
+ 718   1          return true;
+ 719   1      }
+ 720          
+ 721          void WifiTest()
+ 722          {
+ 723   1        #if 0
+                  if(bspEspAtWifiCheckConnectSeverState() != 3)
+                  {
+                    printf("Server Disconnect!\r\n");
+                  }
+C51 COMPILER V9.54   BSPESPATWIFI                                                          04/12/2019 16:33:34 PAGE 13  
+
+                  else
+                  {
+                    printf("Server Connect! \r\n");
+                  }
+                  DelayMs(5000);
+              #endif
+ 734   1      }
+*** WARNING C294 IN LINE 343 OF Src\bspEspAtWifi.c: unreachable code
+*** WARNING C290 IN LINE 497 OF Src\bspEspAtWifi.c: missing return value
+*** WARNING C290 IN LINE 508 OF Src\bspEspAtWifi.c: missing return value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   3829    ----
+   CONSTANT SIZE    =   1104    ----
+   XDATA SIZE       =      5     670
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  10 WARNING(S),  0 ERROR(S)

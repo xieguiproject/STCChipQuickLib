@@ -1,0 +1,317 @@
+C51 COMPILER V9.54   BSPWROOM_02                                                           01/29/2019 16:48:24 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPWROOM_02
+OBJECT MODULE PLACED IN .\Objects\bspWroom-02.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspWroom-02.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Li
+                    -stings\bspWroom-02.lst) TABS(2) OBJECT(.\Objects\bspWroom-02.obj)
+
+line level    source
+
+   1          #include "bspWroom-02.h"
+   2          
+   3          EspWroom02 xdata mdEspWroom02;
+   4          
+   5          void bspWroom02Init()
+   6          {
+   7   1        uint8_t uiTryCount = 0;
+   8   1        
+   9   1        BspUsartInit(2,9600);
+  10   1        mdEspWroom02.usart = BIND_USART;
+  11   1        
+  12   1        logMsg(RM_RUN,"Wifi Mode Begin Init\r\n",0,0,0,0,0,0);
+  13   1      EspModeInit:
+  14   1        
+  15   1        while(bspWroom02Test())//检测模块是否受控制，如果不是则进行重启
+  16   1        {
+  17   2          bspWroom02QuitTrans();
+  18   2          bspWroom02SendCmd("AT+CIPMODE=0","OK",20);
+  19   2          DelayMs(1000);
+  20   2          uiTryCount++;
+  21   2          if(uiTryCount > 5)
+  22   2          {
+  23   3            logMsg(RM_RUN,"Wifi Mode Will Reboot\r\n",0,0,0,0,0,0);
+  24   3            bspWroom02SoftRest();//软件复位
+  25   3            DelayMs(1000);
+  26   3            DelayMs(1000);
+  27   3            DelayMs(1000);
+  28   3            DelayMs(1000);
+  29   3            uiTryCount = 0;
+  30   3            goto EspModeInit;
+  31   3          }
+  32   2        }
+  33   1        logMsg(RM_RUN,"Wifi Mode Is OnLine\r\n",0,0,0,0,0,0);
+  34   1        /*关闭回显模式*/
+  35   1        while(bspWroom02SendCmd("ATE0","OK",50));
+  36   1        
+  37   1        bspWroom02SetWorkMode(Station);//Station模式
+  38   1        bspWroom02SoftRest();//软件复位
+  39   1        
+  40   1        bspWroomConnectWifi("Xiaomi_1F14","11111111");
+  41   1        
+  42   1        logMsg(RM_RUN,"Wifi Connect Is OnLine\r\n",0,0,0,0,0,0);
+  43   1        bspWroomTcpMux(1);//*设置为单连接*/
+  44   1        bspWroomConnectServer("192.168.31.121","8081");
+  45   1        logMsg(RM_RUN,"Server Is Connnect\r\n",0,0,0,0,0,0);
+  46   1        
+  47   1        bspWroom02CleanRecvBuf();
+  48   1      }
+  49          /*****************************************************************************
+  50           * 函 数 名  : bspWroom02CleanRecvBuf
+  51           * 负 责 人  : xiegui
+  52           * 创建日期  : 2019年1月29日
+  53           * 函数功能  : 清除接受缓存
+  54           * 输入参数  : 无
+C51 COMPILER V9.54   BSPWROOM_02                                                           01/29/2019 16:48:24 PAGE 2   
+
+  55           * 输出参数  : 无
+  56           * 返 回 值  : 
+  57           * 调用关系  : 
+  58           * 其    它  : 
+  59          
+  60          *****************************************************************************/
+  61          int8_t bspWroom02CleanRecvBuf()
+  62          {
+  63   1        memset(mdEspWroom02.usart->UsartBuf,0,sizeof(mdEspWroom02.usart->UsartBuf));
+  64   1        mdEspWroom02.usart->UsartCount = 0;
+  65   1        mdEspWroom02.usart->UsartFlage = 0;
+  66   1        return True;
+  67   1      }
+  68          /*****************************************************************************
+  69           * 函 数 名  : bspWroom02SendCmd
+  70           * 负 责 人  : xiegui
+  71           * 创建日期  : 2019年1月20日
+  72           * 函数功能  : 发送命令并监听返回值,用户再移植时只需要移植这个关键接口就可以了。
+  73           * 输入参数  : 无
+  74           * 输出参数  : 无
+  75           * 返 回 值  : 
+  76           * 调用关系  : 
+  77           * 其    它  : 
+  78          
+  79          *****************************************************************************/
+  80          int8_t bspWroom02SendCmd(uint8_t *cmd,uint8_t *ack,uint16_t waittime)
+  81          {
+  82   1        uint8_t xdata CmdBuf[128] = {0};
+  83   1        uint8_t res = True;
+  84   1        char *Poite = NULL;
+  85   1        
+  86   1        memset(CmdBuf,0,sizeof(CmdBuf));
+  87   1        bspWroom02CleanRecvBuf();
+  88   1        
+  89   1        sprintf(CmdBuf,"%s\r\n",cmd);
+  90   1        BspUsartSendStr(mdEspWroom02.usart->uiSerialNum,CmdBuf);
+  91   1        DelayMs(50);
+  92   1        if(ack && waittime)
+  93   1        {
+  94   2          while(--waittime)
+  95   2          {
+  96   3            DelayMs(10);
+  97   3            //如果接受到新数据，
+  98   3            if(mdEspWroom02.usart->UsartFlage & RECV_NEW_DATA)
+  99   3            {
+ 100   4              
+ 101   4              if((Poite = strstr(mdEspWroom02.usart->UsartBuf,ack)) != NULL)
+ 102   4              {
+ 103   5                break;
+ 104   5              }
+ 105   4            }
+ 106   3          }
+ 107   2          if(waittime == 0)
+ 108   2            res = False;
+ 109   2          //超时退出
+ 110   2        }
+ 111   1      
+ 112   1        return res;
+ 113   1      }
+ 114          /*****************************************************************************
+ 115           * 函 数 名  : bspWroom02SoftRest
+ 116           * 负 责 人  : xiegui
+C51 COMPILER V9.54   BSPWROOM_02                                                           01/29/2019 16:48:24 PAGE 3   
+
+ 117           * 创建日期  : 2019年1月29日
+ 118           * 函数功能  : 软件复位
+ 119           * 输入参数  : 无
+ 120           * 输出参数  : 无
+ 121           * 返 回 值  : 
+ 122           * 调用关系  : 
+ 123           * 其    它  : 
+ 124          
+ 125          *****************************************************************************/
+ 126          int8_t bspWroom02SoftRest()
+ 127          {
+ 128   1        return bspWroom02SendCmd("AT+RST","OK",50);
+ 129   1      }
+ 130          /*****************************************************************************
+ 131           * 函 数 名  : bspWroom02HardwareRest
+ 132           * 负 责 人  : xiegui
+ 133           * 创建日期  : 2019年1月29日
+ 134           * 函数功能  : 硬件重启
+ 135           * 输入参数  : 无
+ 136           * 输出参数  : 无
+ 137           * 返 回 值  : 
+ 138           * 调用关系  : 
+ 139           * 其    它  : 
+ 140          
+ 141          *****************************************************************************/
+ 142          int8_t bspWroom02HardwareRest()
+ 143          {
+ 144   1        return True;
+ 145   1      }
+ 146          /*****************************************************************************
+ 147           * 函 数 名  : bspWroom02Test
+ 148           * 负 责 人  : xiegui
+ 149           * 创建日期  : 2019年1月29日
+ 150           * 函数功能  : 测试模块是否受控制
+ 151           * 输入参数  : 无
+ 152           * 输出参数  : 无
+ 153           * 返 回 值  : 
+ 154           * 调用关系  : 
+ 155           * 其    它  : 
+ 156          
+ 157          *****************************************************************************/
+ 158          int8_t bspWroom02Test()
+ 159          {
+ 160   1        return bspWroom02SendCmd("AT","OK",30);
+ 161   1      }
+ 162          /*****************************************************************************
+ 163           * 函 数 名  : bspWroom02QuitTrans
+ 164           * 负 责 人  : xiegui
+ 165           * 创建日期  : 2019年1月29日
+ 166           * 函数功能  : 退出传输模式
+ 167           * 输入参数  : 无
+ 168           * 输出参数  : 无
+ 169           * 返 回 值  : 
+ 170           * 调用关系  : 
+ 171           * 其    它  : 
+ 172          
+ 173          *****************************************************************************/
+ 174          int8_t bspWroom02QuitTrans()
+ 175          {
+ 176   1        BspUsartSendByte(mdEspWroom02.usart->uiSerialNum,'+');
+ 177   1        BspUsartSendByte(mdEspWroom02.usart->uiSerialNum,'+');
+ 178   1        BspUsartSendByte(mdEspWroom02.usart->uiSerialNum,'+');
+C51 COMPILER V9.54   BSPWROOM_02                                                           01/29/2019 16:48:24 PAGE 4   
+
+ 179   1        
+ 180   1        DelayMs(1000);
+ 181   1        
+ 182   1        return bspWroom02SendCmd("AT","OK",50);
+ 183   1      }
+ 184          
+ 185          int8_t bspWroomConnectWifi(uint8_t *WifiName,uint8_t *Password)
+ 186          {
+ 187   1        char xdata CmdBuf[50];
+ 188   1        sprintf((char*)CmdBuf,"AT+CWJAP=\"%s\",\"%s\"",WifiName,Password);
+ 189   1        
+ 190   1        while(bspWroom02SendCmd((uint8_t *)CmdBuf,"WIFI GOT IP",800));
+ 191   1        
+ 192   1        return 1;
+ 193   1      }
+ 194          int8_t bspWroomConnectServer(uint8_t *ServerIp,uint8_t *Port)
+ 195          {
+ 196   1        char xdata CmdBuf[50] = {0};
+ 197   1        sprintf((char*)CmdBuf,"AT+CIPSTART=\"TCP\",\"%s\",%s",ServerIp,(uint8_t*)Port);    //配置目标TCP服务器
+ 198   1      
+ 199   1        while(bspWroom02SendCmd((uint8_t *)CmdBuf,"OK",500))
+ 200   1        {
+ 201   2          logMsg(RM_RUN,"Server Connect Error\r\n",0,0,0,0,0,0);
+ 202   2          DelayMs(1000);
+ 203   2          logMsg(RM_RUN,"Server Reconnect Ing\r\n",0,0,0,0,0,0);
+ 204   2        } 
+ 205   1        return 1;
+ 206   1      }
+ 207          /*****************************************************************************
+ 208           * 函 数 名  : bspWroomTcpMux
+ 209           * 负 责 人  : xiegui
+ 210           * 创建日期  : 2019年1月29日
+ 211           * 函数功能  : 单连接和多连接切换
+ 212           * 输入参数  : int8_t Mode  
+ 213                  1：单连接
+ 214           * 输出参数  : 无
+ 215           * 返 回 值  : 
+ 216           * 调用关系  : 
+ 217           * 其    它  : 
+ 218          
+ 219          *****************************************************************************/
+ 220          int8_t  bspWroomTcpMux(int8_t Mode)
+ 221          {
+ 222   1        char xdata CmdBuf[30] = {0};
+ 223   1        
+ 224   1        sprintf(CmdBuf,"AT+CIPMUX=%d\r\n",Mode);
+ 225   1        
+ 226   1        return bspWroom02SendCmd((uint8_t *)CmdBuf,"OK",100);
+ 227   1      }
+ 228          int8_t bspWroomRecvData(uint8_t WaitPort,uint8_t *RecvBuf,uint16_t RecvDatLen,uint16_t TimeOut)
+ 229          {
+ 230   1        char *IpdStr = NULL;
+ 231   1        char *IpdStr1 = NULL;
+ 232   1        uint16_t  RecvDatNum = 0;
+ 233   1        /*接受字符个数*/
+ 234   1        uint8_t Temp[4] = {0};
+ 235   1        uint8_t RecvDatPort = 0;
+ 236   1        while(TimeOut--)
+ 237   1        {
+ 238   2          IpdStr = strstr(mdEspWroom02.usart->UsartBuf,"+IPD,");
+ 239   2          IpdStr += 5;
+ 240   2          if(IpdStr != NULL)
+C51 COMPILER V9.54   BSPWROOM_02                                                           01/29/2019 16:48:24 PAGE 5   
+
+ 241   2          {
+ 242   3            IpdStr1 = strstr(IpdStr,":");
+ 243   3            if(IpdStr1 != NULL)
+ 244   3            {
+ 245   4              memcpy(Temp,IpdStr,(IpdStr1 - IpdStr));
+ 246   4              RecvDatNum = atoi(Temp);
+ 247   4                
+ 248   4              IpdStr1+=1;
+ 249   4              memset(RecvBuf,0,RecvDatLen);
+ 250   4              if(RecvDatNum > 0)
+ 251   4              {
+ 252   5                printf("DATA:%d %d\r\n",RecvDatNum,RecvDatNum);
+ 253   5                if(RecvDatNum <= RecvDatLen)
+ 254   5                {
+ 255   6                  memcpy(RecvBuf,IpdStr1,RecvDatNum);/*拷贝数据*/
+ 256   6                      
+ 257   6                  memset(mdEspWroom02.usart->UsartBuf,0,RECV_MAX_LEN);
+ 258   6                  mdEspWroom02.usart->UsartCount = 0;
+ 259   6                  mdEspWroom02.usart->UsartFlage = 0;
+ 260   6                  return RecvDatNum;
+ 261   6                }
+ 262   5                else
+ 263   5                {
+ 264   6                  memcpy(RecvBuf,IpdStr1,RecvDatLen);/*拷贝数据*/
+ 265   6                  memset(mdEspWroom02.usart->UsartBuf,0,RECV_MAX_LEN);
+ 266   6                  mdEspWroom02.usart->UsartCount = 0;
+ 267   6                  mdEspWroom02.usart->UsartFlage = 0;
+ 268   6                  return RecvDatLen;
+ 269   6                }
+ 270   5              }
+ 271   4            }
+ 272   3          }
+ 273   2          DelayMs(1);
+ 274   2        }
+ 275   1        return 0;
+ 276   1      }
+*** WARNING C280 IN LINE 228 OF Src\bspWroom-02.c: 'WaitPort': unreferenced local variable
+ 277          int8_t bspWroom02SetWorkMode(int8_t Mode)
+ 278          {
+ 279   1        char xdata CmdBuf[30] = {0};
+ 280   1        
+ 281   1        sprintf(CmdBuf,"AT+CWMODE=%d\r\n",Mode);
+ 282   1        
+ 283   1        return bspWroom02SendCmd((uint8_t *)CmdBuf,"OK",50);
+ 284   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1580    ----
+   CONSTANT SIZE    =    662    ----
+   XDATA SIZE       =      3     288
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      48
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

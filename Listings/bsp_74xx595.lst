@@ -1,0 +1,58 @@
+C51 COMPILER V9.54   BSP_74XX595                                                           12/24/2019 09:15:05 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSP_74XX595
+OBJECT MODULE PLACED IN .\Objects\bsp_74xx595.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bsp_74xx595.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC1
+                    -5_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp
+                    -_74xx595.lst) TABS(2) PREPRINT(.\Listings\bsp_74xx595.i) OBJECT(.\Objects\bsp_74xx595.obj)
+
+line level    source
+
+   1          #include "bsp_74xx595.h"
+   2          
+   3          status bsp74lx595Init()
+   4          {
+   5   1        GPIO_InitTypeDef GPIO_InitStruct;
+   6   1        
+   7   1        GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5;
+   8   1        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Standard_IO;
+   9   1        
+  10   1        GPIO_Init(GPIO_P1,&GPIO_InitStruct);
+  11   1      }
+*** WARNING C173 IN LINE 11 OF Src\bsp_74xx595.c: missing return-expression
+  12          uint8_t L74xx595_Wirte_One_Byte(uint8_t dat)
+  13          {
+  14   1        uint8_t i=0;
+  15   1        
+  16   1        L74XX595_SHR=1;//拉低锁存信号，准备锁存数据
+  17   1        for(i=0;i<L74XX595_bit;i++)
+  18   1        {
+  19   2          L74XX595_CLK = 0;
+  20   2          if(dat&0x01 == 1)
+  21   2            L74XX595_IO = 1;
+  22   2          else
+  23   2            L74XX595_IO = 0;
+  24   2          L74XX595_CLK = 1;
+  25   2          dat>>=1;
+  26   2        }
+  27   1        L74XX595_SHR=0;
+  28   1        L74XX595_SHR=1;
+  29   1        return 0;
+  30   1      }
+  31          
+*** WARNING C290 IN LINE 11 OF Src\bsp_74xx595.c: missing return value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     54    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\bspDelay.obj",
+".\Objects\stc15xx_gpio.obj",
+".\Objects\stc15xx_usart.obj",
+".\Objects\stc15xx_timer.obj" 
+TO ".\Objects\ControlBoradCodeFor51" 
+PRINT(".\Listings\ControlBoradCodeFor51.m51") RAMSIZE(256) 

@@ -1,0 +1,93 @@
+C51 COMPILER V9.54   BSP_GETMM                                                             12/24/2019 11:15:39 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSP_GETMM
+OBJECT MODULE PLACED IN .\Objects\bsp_Getmm.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bsp_Getmm.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC15_
+                    -StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_G
+                    -etmm.lst) TABS(2) PREPRINT(.\Listings\bsp_Getmm.i) OBJECT(.\Objects\bsp_Getmm.obj)
+
+line level    source
+
+   1          #include  "bsp_Getmm.h"
+   2          
+   3          SensorInfo mdSensorInfo[2];
+   4          
+   5          
+   6          //发送一次获取距离命令
+   7          void bspGetmm()
+   8          {
+   9   1        uint8_t cmd[] = {0x01,0x03,0x00,0x0F,0x00,0x02,0xF4,0x08};
+  10   1        
+  11   1        bspUsartSendString(Usart1,cmd,sizeof(cmd));
+  12   1        //Delay10ms();
+  13   1        bspUsartSendString(Usart2,cmd,sizeof(cmd));
+  14   1      }
+  15          void bspDelSensorData(uint8_t uiSenSorNo,UsartInfo *usart,uint16_t uiByte)
+  16          {
+  17   1        uint32_t uiData = 0;
+  18   1        uint16_t uiLoop = 0;
+  19   1        for(uiLoop = 0;uiLoop < uiByte;uiLoop++)
+  20   1        {
+  21   2          if(usart->ucUart1Buf[uiLoop] == 0x01 &&
+  22   2            usart->ucUart1Buf[uiLoop + 1] == 0x03 &&
+  23   2            usart->ucUart1Buf[uiLoop + 2] == 0x04)
+  24   2          {
+  25   3              uiData = (((uint32_t)usart->ucUart1Buf[uiLoop + 3] << 24) |
+  26   3                  ((uint32_t)usart->ucUart1Buf[uiLoop + 4] << 16) |
+  27   3                  ((uint32_t)usart->ucUart1Buf[uiLoop + 5] << 8) |
+  28   3                  ((uint32_t)usart->ucUart1Buf[uiLoop + 6]));
+  29   3              
+  30   3              if(uiData == ERROR1 || uiData == ERROR2 || 
+  31   3                  uiData == ERROR3 || uiData == ERROR4)
+  32   3              {
+  33   4                  mdSensorInfo[uiSenSorNo].uiCurMM = 0;
+  34   4                  mdSensorInfo[uiSenSorNo].uiCurErroeCode = uiData;
+  35   4              }
+  36   3              else
+  37   3              {
+  38   4                 mdSensorInfo[uiSenSorNo].uiCurMM = uiData;
+  39   4                 mdSensorInfo[uiSenSorNo].uiCurErroeCode = 1;
+  40   4              }
+  41   3              mdSensorInfo[uiSenSorNo].uiCurM = (float)mdSensorInfo[uiSenSorNo].uiCurMM / 1000.0;
+  42   3          }
+  43   2        }
+  44   1      }
+  45          //处理传感器的数据回传
+  46          void bspDelSensorBack()
+  47          {
+  48   1        
+  49   1        uint16_t uiByte = 0;
+  50   1        
+  51   1        UsartInfo *usart;
+  52   1        if(bspUsartReciveEnd(Usart1) == OK)
+  53   1        {
+C51 COMPILER V9.54   BSP_GETMM                                                             12/24/2019 11:15:39 PAGE 2   
+
+  54   2          usart = &mdUsarts.UsartInfos[Usart1 - 1];
+  55   2          uiByte = bspUsartReadyByte(Usart1);/*获取串口接受到的数据量*/
+  56   2          bspDelSensorData(0,usart,uiByte);
+  57   2          usart->uiRCurCount = 0;
+  58   2        }
+  59   1        if(bspUsartReciveEnd(Usart2) == OK)
+  60   1        {
+  61   2          usart = &mdUsarts.UsartInfos[Usart2 - 1];
+  62   2          uiByte = bspUsartReadyByte(Usart2);/*获取串口接受到的数据量*/
+  63   2          bspDelSensorData(1,usart,uiByte);
+  64   2          usart->uiRCurCount = 0;
+  65   2        }
+  66   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    705    ----
+   CONSTANT SIZE    =      8    ----
+   XDATA SIZE       =     24      25
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

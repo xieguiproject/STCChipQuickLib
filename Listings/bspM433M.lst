@@ -1,0 +1,31 @@
+C51 COMPILER V9.54   BSPM433M                                                              05/27/2019 16:20:02 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPM433M
+OBJECT MODULE PLACED IN .\Objects\bspM433M.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspM433M.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC15_S
+                    -tdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bspM43
+                    -3M.lst) TABS(2) OBJECT(.\Objects\bspM433M.obj)
+
+line level    source
+
+   1          #include "bspM433M.h"
+   2          
+   3          void bspM433MInit()
+   4          {
+   5   1        //433Ä£¿é³õÊ¼»¯
+   6   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =      1    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

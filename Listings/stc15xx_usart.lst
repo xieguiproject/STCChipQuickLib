@@ -1,0 +1,292 @@
+C51 COMPILER V9.54   STC15XX_USART                                                         12/25/2019 13:06:45 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE STC15XX_USART
+OBJECT MODULE PLACED IN .\Objects\stc15xx_usart.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Libraries\STC15_StdPeriph_Driver\src\stc15xx_usart.c LARGE OPTIMIZE(9,SP
+                    -EED) BROWSE INCDIR(.\Libraries\STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEFI
+                    -NE(STC8) DEBUG OBJECTEXTEND PRINT(.\Listings\stc15xx_usart.lst) TABS(2) PREPRINT(.\Listings\stc15xx_usart.i) OBJECT(.\Ob
+                    -jects\stc15xx_usart.obj)
+
+line level    source
+
+   1          #include "stc15xx_usart.h"
+   2          
+   3          UsartInfoList xdata mdUsarts;
+   4          
+   5          status bspUSART_Init(uint8_t uiUsartNo,USART_InitTypeDef *USART_InitStruct)
+   6          {
+   7   1        uint32_t uiDat = 0;
+   8   1        TIM_InitTypeDef InitTypeDef;
+   9   1        switch(uiUsartNo)
+  10   1        {
+  11   2          case Usart1:
+  12   2      #ifdef STC15 | STC8
+*** WARNING C323 IN LINE 12 OF Libraries\STC15_StdPeriph_Driver\src\stc15xx_usart.c: newline expected, extra characters 
+             -found
+                    /*设置串口的管脚切换关系 ：低端cpu不支持*/
+                    switch(USART_InitStruct->UART_P_SW)
+                    {
+                      case UART1_SW_P30_P31:
+                      {
+                          ACC = P_SW1;
+                          ACC &= ~(S1_S0 | S1_S1);
+                          P_SW1 = ACC;
+                      };break;
+                      case UART1_SW_P36_P37:
+                      {
+                          ACC = P_SW1;
+                          ACC &= ~(S1_S0 | S1_S1);
+                          ACC |= S1_S0;
+                          P_SW1 = ACC;
+                      };break;
+                      case UART1_SW_P16_P17:
+                      {
+                          ACC = P_SW1;
+                          ACC &= ~(S1_S0 | S1_S1);
+                          ACC |= S1_S1;
+                          P_SW1 = ACC;
+                      };break;
+                      default:
+                      {
+                          ACC = P_SW1;
+                          ACC &= ~(S1_S0 | S1_S1);
+                          P_SW1 = ACC;
+                      };break;
+                    }
+              #endif
+  44   2            if(USART_InitStruct->UART_Interrupt == ENABLE)  
+  45   2              ES = 1; //允许中断
+  46   2            else                
+  47   2              ES = 0;//禁止中断
+  48   2            if(USART_InitStruct->UART_RxEnable == ENABLE) 
+  49   2              REN = 1;//允许接收
+  50   2            else                
+C51 COMPILER V9.54   STC15XX_USART                                                         12/25/2019 13:06:45 PAGE 2   
+
+  51   2              REN = 0;//禁止接收
+  52   2            if(USART_InitStruct->UART_RXD_TXD_Short == ENABLE)  
+  53   2              PCON2 |=  (1<<4); //内部短路RXD与TXD, 做中继, ENABLE,DISABLE
+  54   2            else                  
+  55   2              PCON2 &= ~(1<<4);
+  56   2            
+  57   2            SCON &= ~(0X11 << 6);
+  58   2            if(USART_InitStruct->UART_Mode == UART_8bit_BRTx)
+  59   2            {
+  60   3              SCON |= (UART_8bit_BRTx << 6);
+  61   3              //设置串口模式位8位可变模式
+  62   3            }
+  63   2            //波特率设置
+  64   2      #ifdef STC15 | STC8
+*** WARNING C323 IN LINE 64 OF Libraries\STC15_StdPeriph_Driver\src\stc15xx_usart.c: newline expected, extra characters 
+             -found
+                    //独立波特率发生器
+                    if(USART_InitStruct->UART_BRT_Use == BRT_SelfTimer)
+                    {
+                        AUXR |= 0X01;           //设置串口一为独立波特率发生器
+                        AUXR |= 0X04;           //设置工作在1T模式
+                        BRT = 0xDC;             //设置波特率为9600
+                        AUXR |= 0x10;           //启动独立波特率发生器
+                    }
+              #endif
+  74   2      #ifndef STC15W201S
+  75   2            //STC15W201S 单片机只能使用定时器2作为波特率发生器
+  76   2            if(USART_InitStruct->UART_BRT_Use == BRT_Timer1)
+  77   2            {
+  78   3      #if 0
+                      AUXR &= ~0x01;    //选择定时器1作为波特率发生器
+                      TMOD &= ~(1<<6);  //Timer1 set As Timer
+                      TMOD &= ~0x30;    //Timer1_16bitAutoReload;
+                      AUXR |=  (1<<6);  //Timer1 set as 1T mode
+                      TH1 =  BuadRateH(USART_InitStruct->UART_BaudRate);
+                      TL1 =  BuadRateL(USART_InitStruct->UART_BaudRate);
+                      ET1 = 0;      //禁止中断
+                      TMOD &= ~0x40;    //定时
+                      INT_CLKO &= ~0x02;  //不输出时钟
+              #else   
+  89   3              SCON |= 0x50;   //8???,?????
+  90   3              AUXR |= 0x40;   //???1???Fosc,?1T
+  91   3              AUXR &= 0xFE;   //??1?????1???????
+  92   3              TMOD &= 0x0F;   //?????1?16???????
+  93   3              TL1 = 0xB8;   //??????
+  94   3              TH1 = 0xFF;   //??????
+  95   3              ET1 = 0;    //?????1??
+  96   3              TR1 = 1;    //?????1
+  97   3      #endif
+  98   3            }
+  99   2      #endif
+ 100   2            if(USART_InitStruct->UART_BRT_Use == BRT_Timer2)
+ 101   2            {
+ 102   3              AUXR |= 0X01;//旋转定时器2作为波特率发生器
+ 103   3              //下面进行定时器2的配置
+ 104   3              InitTypeDef.TIM_Mode = TIM_16BitAutoReload;//定时器2 16位自动重载
+ 105   3              InitTypeDef.TIM_ClkSource = TIM_CLOCK_1T;//12t模式
+ 106   3              InitTypeDef.TIM_Interrupt = DISABLE;//不允许中断
+ 107   3              InitTypeDef.TIM_Run = DISABLE;//不直接允许
+ 108   3              InitTypeDef.TIM_LValue =  BuadRateL(USART_InitStruct->UART_BaudRate); 
+ 109   3              //定时器低位
+ 110   3              InitTypeDef.TIM_HValue = BuadRateH(USART_InitStruct->UART_BaudRate);     
+C51 COMPILER V9.54   STC15XX_USART                                                         12/25/2019 13:06:45 PAGE 3   
+
+ 111   3              //定时器高位
+ 112   3              bspTimer_Init(Timer2,&InitTypeDef);
+ 113   3              //开启定时器2
+ 114   3              bspTimer_Cmd(Timer2,ENABLE);  
+ 115   3            }
+ 116   2            
+ 117   2            break;
+ 118   2          case Usart2:
+ 119   2      #ifdef STC15 | STC8
+*** WARNING C323 IN LINE 119 OF Libraries\STC15_StdPeriph_Driver\src\stc15xx_usart.c: newline expected, extra characters
+             - found
+                    //独立波特率发生器
+                    if(USART_InitStruct->UART_BRT_Use == BRT_SelfTimer)
+                    {
+                        AUXR |= 0X01;//设置串口二为独立波特率发生器
+                    }
+              #endif
+ 126   2            /*串口2只能使用定时器2作为波特率发生器*/
+ 127   2            {
+ 128   3              S2CON = 0x50;   
+ 129   3              AUXR |= 0x04; 
+ 130   3              T2L = 0xB8;   
+ 131   3              T2H = 0xFF;   
+ 132   3              AUXR |= 0x10;
+ 133   3              IE2 |= 0X01;
+ 134   3            }
+ 135   2            break;
+ 136   2        }
+ 137   1        return 1;
+ 138   1      }
+ 139          /*****************************************************************************
+ 140           函 数 名  : bspSendByte
+ 141           功能描述  : 发送一个字节数据到指定串口
+ 142           输入参数  : uint8_t uiUsartNo  
+ 143                       uint8_t uiData     
+ 144           输出参数  : 无
+ 145           返 回 值  : 
+ 146           调用函数  : 
+ 147           被调函数  : 
+ 148           
+ 149           修改历史      :
+ 150            1.日    期   : 2019年5月28日 星期二
+ 151              作    者   : Gavinx
+ 152              修改内容   : 新生成函数
+ 153          
+ 154          *****************************************************************************/
+ 155          status bspUsartSendByte(uint8_t uiUsartNo,uint8_t uiData)
+ 156          {
+ 157   1        switch(uiUsartNo)
+ 158   1        {
+ 159   2          case Usart1:
+ 160   2          {
+ 161   3            SBUF = uiData;
+ 162   3            while(TI == 0);
+ 163   3            TI = 0;
+ 164   3          };break;
+ 165   2          case Usart2:
+ 166   2          {
+ 167   3            S2BUF= uiData;
+ 168   3            while(!(S2CON & S2TI));
+ 169   3            S2CON &= ~S2TI;
+ 170   3          };break;
+C51 COMPILER V9.54   STC15XX_USART                                                         12/25/2019 13:06:45 PAGE 4   
+
+ 171   2        }
+ 172   1        return true;
+ 173   1      }
+ 174          uint16_t bspUsartReadyByte(uint8_t uiUsartNo)
+ 175          {
+ 176   1        UsartInfo *usart;
+ 177   1        
+ 178   1        usart = &mdUsarts.UsartInfos[uiUsartNo - 1];
+ 179   1        
+ 180   1        return usart->uiRCurCount;
+ 181   1      }
+ 182          /*判断串口是否接受结束*/
+ 183          status bspUsartReciveEnd(uint8_t uiUsartNo)
+ 184          {
+ 185   1        UsartInfo *usart;
+ 186   1        
+ 187   1        usart = &mdUsarts.UsartInfos[uiUsartNo - 1];
+ 188   1        if(usart->ucCheckEndCount > 0)
+ 189   1        {
+ 190   2          usart->ucCheckEndCount--;
+ 191   2        }
+ 192   1        if(usart->ucCheckEndCount == 0 && usart->uiRCurCount > 0)
+ 193   1        {
+ 194   2          //接受结束
+ 195   2          return OK;
+ 196   2        }
+ 197   1        return ERROR;
+ 198   1      }
+ 199          status bspUsartSendString(uint8_t uiUsartNo,uint8_t *uiData,uint16_t uiLen)
+ 200          {
+ 201   1        uint16_t uiLoop = 0;
+ 202   1        if(uiLen == 0)
+ 203   1        {
+ 204   2          while(*uiData != '\0')
+ 205   2          {
+ 206   3            bspUsartSendByte(uiUsartNo,*uiData);
+ 207   3            uiData++;
+ 208   3          }
+ 209   2        }
+ 210   1        else
+ 211   1        {
+ 212   2          while(uiLen)
+ 213   2          {
+ 214   3            bspUsartSendByte(uiUsartNo,uiData[uiLoop]);
+ 215   3            uiLen--;
+ 216   3            uiLoop++;
+ 217   3          }
+ 218   2        }
+ 219   1        return true;
+ 220   1      }
+ 221          void bspUsart1_IRQHandler(void) interrupt USART1_IRQ using 1
+ 222          {
+ 223   1        UsartInfo *usart;
+ 224   1        usart = &mdUsarts.UsartInfos[0];
+ 225   1        if(RI)
+ 226   1        {
+ 227   2          RI = 0;
+ 228   2          usart->ucCheckEndCount = USART_CHECK_END_MAX;
+ 229   2          usart->ucUart1Buf[usart->uiRCurCount++] = SBUF;
+ 230   2          if(usart->uiRCurCount > sizeof(usart->ucUart1Buf))
+ 231   2          {
+ 232   3            usart->uiRCurCount = 0;
+C51 COMPILER V9.54   STC15XX_USART                                                         12/25/2019 13:06:45 PAGE 5   
+
+ 233   3          }
+ 234   2        }
+ 235   1      }
+ 236          void bspUsart2_IRQHandler() interrupt USART2_IRQ using 1
+ 237          {
+ 238   1        UsartInfo *usart;
+ 239   1        usart = &mdUsarts.UsartInfos[1];
+ 240   1        
+ 241   1          if (S2CON & S2RI)
+ 242   1          {
+ 243   2              S2CON &= ~S2RI;     //Clear receive interrupt flag
+ 244   2              usart->ucCheckEndCount = USART_CHECK_END_MAX;
+ 245   2          usart->ucUart1Buf[usart->uiRCurCount++] = S2BUF;
+ 246   2          if(usart->uiRCurCount > sizeof(usart->ucUart1Buf))
+ 247   2          {
+ 248   3            usart->uiRCurCount = 0;
+ 249   3          }
+ 250   2          }
+ 251   1      }
+ 252          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    660    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    262      23
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)

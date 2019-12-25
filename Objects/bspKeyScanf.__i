@@ -1,0 +1,1 @@
+"Src\bspKeyScanf.c" LARGE OPTIMIZE (9,SPEED) BROWSE INCDIR(.\Libraries\STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bspKeyScanf.lst) TABS (2) PREPRINT(.\Listings\bspKeyScanf.i) OBJECT(.\Objects\bspKeyScanf.obj)

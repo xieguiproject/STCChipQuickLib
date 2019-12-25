@@ -1,0 +1,192 @@
+C51 COMPILER V9.54   STC15XX_GPIO                                                          12/24/2019 16:31:48 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE STC15XX_GPIO
+OBJECT MODULE PLACED IN .\Objects\stc15xx_gpio.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Libraries\STC15_StdPeriph_Driver\src\stc15xx_gpio.c LARGE OPTIMIZE(9,SPE
+                    -ED) BROWSE INCDIR(.\Libraries\STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEFIN
+                    -E(STC8) DEBUG OBJECTEXTEND PRINT(.\Listings\stc15xx_gpio.lst) TABS(2) PREPRINT(.\Listings\stc15xx_gpio.i) OBJECT(.\Objec
+                    -ts\stc15xx_gpio.obj)
+
+line level    source
+
+   1          #include "stc15xx_gpio.h"
+   2          
+   3          status GPIO_SetBits(uint8_t GPIO_PX,uint8_t GPIO_Pin)
+   4          {
+   5   1        switch(GPIO_PX)
+   6   1        {
+   7   2          case GPIO_P0:
+   8   2            P0 = 0X00;
+   9   2            break;
+  10   2          case GPIO_P1:
+  11   2            break;
+  12   2        }
+  13   1      }
+*** WARNING C173 IN LINE 13 OF Libraries\STC15_StdPeriph_Driver\src\stc15xx_gpio.c: missing return-expression
+*** WARNING C280 IN LINE 3 OF Libraries\STC15_StdPeriph_Driver\src\stc15xx_gpio.c: 'GPIO_Pin': unreferenced local variab
+             -le
+  14          status GPIO_Init(uint8_t GPIO_PX,GPIO_InitTypeDef *GPIO_InitStruct)
+  15          {
+  16   1        if(GPIO_PX > GPIO_P5)       return ERROR; //空操作
+  17   1        if(GPIO_InitStruct->GPIO_Mode > GPIO_Mode_Out_PP) return ERROR; //错误
+  18   1        if(GPIO_PX == GPIO_P0)
+  19   1        {
+  20   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Standard_IO)
+  21   2          {
+  22   3            P0M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  23   3            P0M0 &= ~GPIO_InitStruct->GPIO_Pin;  //上拉准双向口
+  24   3          }
+  25   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_IPD)
+  26   2          {
+  27   3            P0M1 |=  GPIO_InitStruct->GPIO_Pin;
+  28   3            P0M0 &= ~GPIO_InitStruct->GPIO_Pin;  //浮空输入
+  29   3          }
+  30   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_OD)
+  31   2          {
+  32   3            P0M1 |=  GPIO_InitStruct->GPIO_Pin;
+  33   3            P0M0 |=  GPIO_InitStruct->GPIO_Pin;  //开漏输出
+  34   3          }
+  35   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_PP)
+  36   2          {
+  37   3            P0M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  38   3            P0M0 |=  GPIO_InitStruct->GPIO_Pin;  //推挽输出
+  39   3          }
+  40   2        }
+  41   1        if(GPIO_PX == GPIO_P1)
+  42   1        {
+  43   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Standard_IO)
+  44   2          {
+  45   3            P1M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  46   3            P1M0 &= ~GPIO_InitStruct->GPIO_Pin;  //上拉准双向口
+  47   3          }
+  48   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_IPD)
+  49   2          {
+C51 COMPILER V9.54   STC15XX_GPIO                                                          12/24/2019 16:31:48 PAGE 2   
+
+  50   3            P1M1 |=  GPIO_InitStruct->GPIO_Pin;
+  51   3            P1M0 &= ~GPIO_InitStruct->GPIO_Pin;  //浮空输入
+  52   3          }
+  53   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_OD)
+  54   2          {
+  55   3            P1M1 |=  GPIO_InitStruct->GPIO_Pin;
+  56   3            P1M0 |=  GPIO_InitStruct->GPIO_Pin;  //开漏输出
+  57   3          }
+  58   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_PP)
+  59   2          {
+  60   3            P1M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  61   3            P1M0 |=  GPIO_InitStruct->GPIO_Pin;  //推挽输出
+  62   3          }
+  63   2        }
+  64   1        if(GPIO_PX == GPIO_P2)
+  65   1        {
+  66   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Standard_IO)
+  67   2          {
+  68   3            P2M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  69   3            P2M0 &= ~GPIO_InitStruct->GPIO_Pin;  //上拉准双向口
+  70   3          }
+  71   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_IPD)
+  72   2          {
+  73   3            P2M1 |=  GPIO_InitStruct->GPIO_Pin;
+  74   3            P2M0 &= ~GPIO_InitStruct->GPIO_Pin;  //浮空输入
+  75   3          }
+  76   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_OD)
+  77   2          {
+  78   3            P2M1 |=  GPIO_InitStruct->GPIO_Pin;
+  79   3            P2M0 |=  GPIO_InitStruct->GPIO_Pin;  //开漏输出
+  80   3          }
+  81   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_PP)
+  82   2          {
+  83   3            P2M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  84   3            P2M0 |=  GPIO_InitStruct->GPIO_Pin;  //推挽输出
+  85   3          }
+  86   2        }
+  87   1        if(GPIO_PX == GPIO_P3)
+  88   1        {
+  89   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Standard_IO)
+  90   2          {
+  91   3            P3M1 &= ~GPIO_InitStruct->GPIO_Pin;
+  92   3            P3M0 &= ~GPIO_InitStruct->GPIO_Pin;  //上拉准双向口
+  93   3          }
+  94   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_IPD)
+  95   2          {
+  96   3            P3M1 |=  GPIO_InitStruct->GPIO_Pin;
+  97   3            P3M0 &= ~GPIO_InitStruct->GPIO_Pin;  //浮空输入
+  98   3          }
+  99   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_OD)
+ 100   2          {
+ 101   3            P3M1 |=  GPIO_InitStruct->GPIO_Pin;
+ 102   3            P3M0 |=  GPIO_InitStruct->GPIO_Pin;  //开漏输出
+ 103   3          }
+ 104   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_PP)
+ 105   2          {
+ 106   3            P3M1 &= ~GPIO_InitStruct->GPIO_Pin;
+ 107   3            P3M0 |=  GPIO_InitStruct->GPIO_Pin;  //推挽输出
+ 108   3          }
+ 109   2        }
+ 110   1        if(GPIO_PX == GPIO_P4)
+ 111   1        {
+C51 COMPILER V9.54   STC15XX_GPIO                                                          12/24/2019 16:31:48 PAGE 3   
+
+ 112   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Standard_IO)
+ 113   2          {
+ 114   3            P4M1 &= ~GPIO_InitStruct->GPIO_Pin;
+ 115   3            P4M0 &= ~GPIO_InitStruct->GPIO_Pin;  //上拉准双向口
+ 116   3          }
+ 117   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_IPD)
+ 118   2          {
+ 119   3            P4M1 |=  GPIO_InitStruct->GPIO_Pin;
+ 120   3            P4M0 &= ~GPIO_InitStruct->GPIO_Pin;  //浮空输入
+ 121   3          }
+ 122   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_OD)
+ 123   2          {
+ 124   3            P4M1 |=  GPIO_InitStruct->GPIO_Pin;
+ 125   3            P4M0 |=  GPIO_InitStruct->GPIO_Pin;  //开漏输出
+ 126   3          }
+ 127   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_PP)
+ 128   2          {
+ 129   3            P4M1 &= ~GPIO_InitStruct->GPIO_Pin;
+ 130   3            P4M0 |=  GPIO_InitStruct->GPIO_Pin;  //推挽输出
+ 131   3          }
+ 132   2        }
+ 133   1        if(GPIO_PX == GPIO_P5)
+ 134   1        {
+ 135   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Standard_IO)
+ 136   2          {
+ 137   3            P5M1 &= ~GPIO_InitStruct->GPIO_Pin;
+ 138   3            P5M0 &= ~GPIO_InitStruct->GPIO_Pin;  //上拉准双向口
+ 139   3          }
+ 140   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_IPD)
+ 141   2          {
+ 142   3            P5M1 |=  GPIO_InitStruct->GPIO_Pin;
+ 143   3            P5M0 &= ~GPIO_InitStruct->GPIO_Pin;  //浮空输入
+ 144   3          }
+ 145   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_OD)
+ 146   2          {
+ 147   3            P5M1 |=  GPIO_InitStruct->GPIO_Pin;
+ 148   3            P5M0 |=  GPIO_InitStruct->GPIO_Pin;  //开漏输出
+ 149   3          }
+ 150   2          if(GPIO_InitStruct->GPIO_Mode == GPIO_Mode_Out_PP)
+ 151   2          {
+ 152   3            P5M1 &= ~GPIO_InitStruct->GPIO_Pin;
+ 153   3            P5M0 |=  GPIO_InitStruct->GPIO_Pin;  //推挽输出
+ 154   3          }
+ 155   2        }
+ 156   1        
+ 157   1        return OK;  //成功
+ 158   1      }
+*** WARNING C290 IN LINE 13 OF Libraries\STC15_StdPeriph_Driver\src\stc15xx_gpio.c: missing return value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    398    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)

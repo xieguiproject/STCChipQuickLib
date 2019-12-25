@@ -1,0 +1,1 @@
+"Libraries\STC15_StdPeriph_Driver\src\stc15xx_usart.c" LARGE OPTIMIZE (9,SPEED) BROWSE INCDIR(.\Libraries\STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEFINE (STC8) DEBUG OBJECTEXTEND PRINT(.\Listings\stc15xx_usart.lst) TABS (2) PREPRINT(.\Listings\stc15xx_usart.i) OBJECT(.\Objects\stc15xx_usart.obj)

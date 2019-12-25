@@ -1,0 +1,1 @@
+"Src\bspSpi.c" OPTIMIZE (8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\bspSpi.lst) TABS (2) OBJECT(.\Objects\bspSpi.obj)

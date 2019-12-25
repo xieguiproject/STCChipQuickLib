@@ -1,0 +1,1 @@
+"Src\bsp_Epprom.c" LARGE OPTIMIZE (9,SPEED) BROWSE INCDIR(.\Libraries\STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_Epprom.lst) TABS (2) PREPRINT(.\Listings\bsp_Epprom.i) OBJECT(.\Objects\bsp_Epprom.obj)

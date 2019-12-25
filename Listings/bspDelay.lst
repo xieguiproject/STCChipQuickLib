@@ -1,0 +1,147 @@
+C51 COMPILER V9.54   BSPDELAY                                                              12/24/2019 16:31:48 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPDELAY
+OBJECT MODULE PLACED IN .\Objects\bspDelay.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspDelay.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC15_S
+                    -tdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEFINE(STC8) DEBUG OBJECTEXTEND PRINT(.\Li
+                    -stings\bspDelay.lst) TABS(2) PREPRINT(.\Listings\bspDelay.i) OBJECT(.\Objects\bspDelay.obj)
+
+line level    source
+
+   1          #include "bspDelay.h"
+   2          
+   3          void Delay1us()   //@11.0592MHz
+   4          {
+   5   1        _nop_();
+   6   1        _nop_();
+   7   1        _nop_();
+   8   1      }
+   9          void Delay10us()    //@11.0592MHz
+  10          {
+  11   1        unsigned char i;
+  12   1      
+  13   1        _nop_();
+  14   1        i = 25;
+  15   1        while (--i);
+  16   1      }
+  17          void Delay100us()   //@11.0592MHz
+  18          {
+  19   1        unsigned char i, j;
+  20   1      
+  21   1        _nop_();
+  22   1        _nop_();
+  23   1        i = 2;
+  24   1        j = 15;
+  25   1        do
+  26   1        {
+  27   2          while (--j);
+  28   2        } while (--i);
+  29   1      }
+  30          void Delay500us()   //@11.0592MHz
+  31          {
+  32   1        unsigned char i, j;
+  33   1      
+  34   1        _nop_();
+  35   1        _nop_();
+  36   1        i = 6;
+  37   1        j = 93;
+  38   1        do
+  39   1        {
+  40   2          while (--j);
+  41   2        } while (--i);
+  42   1      }
+  43          void Delay1ms()   //@11.0592MHz
+  44          {
+  45   1        unsigned char i, j;
+  46   1      
+  47   1        _nop_();
+  48   1        _nop_();
+  49   1        _nop_();
+  50   1        i = 11;
+  51   1        j = 190;
+  52   1        do
+  53   1        {
+C51 COMPILER V9.54   BSPDELAY                                                              12/24/2019 16:31:48 PAGE 2   
+
+  54   2          while (--j);
+  55   2        } while (--i);
+  56   1      }
+  57          void Delay10ms()    //@11.0592MHz
+  58          {
+  59   1        unsigned char i, j;
+  60   1      
+  61   1        i = 108;
+  62   1        j = 145;
+  63   1        do
+  64   1        {
+  65   2          while (--j);
+  66   2        } while (--i);
+  67   1      }
+  68          void Delay100ms()   //@11.0592MHz
+  69          {
+  70   1        unsigned char i, j, k;
+  71   1      
+  72   1        _nop_();
+  73   1        _nop_();
+  74   1        i = 5;
+  75   1        j = 52;
+  76   1        k = 195;
+  77   1        do
+  78   1        {
+  79   2          do
+  80   2          {
+  81   3            while (--k);
+  82   3          } while (--j);
+  83   2        } while (--i);
+  84   1      }
+  85          void Delay500ms()   //@11.0592MHz
+  86          {
+  87   1        unsigned char i, j, k;
+  88   1      
+  89   1        _nop_();
+  90   1        _nop_();
+  91   1        i = 22;
+  92   1        j = 3;
+  93   1        k = 227;
+  94   1        do
+  95   1        {
+  96   2          do
+  97   2          {
+  98   3            while (--k);
+  99   3          } while (--j);
+ 100   2        } while (--i);
+ 101   1      }
+ 102          void Delay1000ms()    //@11.0592MHz
+ 103          {
+ 104   1        unsigned char i, j, k;
+ 105   1      
+ 106   1        _nop_();
+ 107   1        _nop_();
+ 108   1        i = 43;
+ 109   1        j = 6;
+ 110   1        k = 203;
+ 111   1        do
+ 112   1        {
+ 113   2          do
+ 114   2          {
+ 115   3            while (--k);
+C51 COMPILER V9.54   BSPDELAY                                                              12/24/2019 16:31:48 PAGE 3   
+
+ 116   3          } while (--j);
+ 117   2        } while (--i);
+ 118   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     98    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

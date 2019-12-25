@@ -1,0 +1,203 @@
+C51 COMPILER V9.54   BSPLCD1602                                                            12/23/2019 22:43:58 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPLCD1602
+OBJECT MODULE PLACED IN .\Objects\bspLcd1602.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspLcd1602.C LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC15
+                    -_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bspL
+                    -cd1602.lst) TABS(2) PREPRINT(.\Listings\bspLcd1602.i) OBJECT(.\Objects\bspLcd1602.obj)
+
+line level    source
+
+   1          #include "bspLcd1602.h"
+   2          
+   3          void delay_ms(unsigned int ms)
+   4          {
+   5   1        unsigned int i=0,j=0;
+   6   1        for(i=0;i<ms;i++)
+   7   1        for(j=0;j<123;j++);
+   8   1      }
+   9          void delay(unsigned int t)   //延时
+  10          {    
+  11   1        while(t--);
+  12   1      }
+  13          
+  14          void  LCD_Wait(void)  //读忙状态
+  15          {
+  16   1        LcdRs=0;
+  17   1        LcdRw=1;
+  18   1        LcdEn=1;delay(10);LcdEn=0;  //下降沿  
+  19   1        while(Lcdbf)
+  20   1        {
+  21   2          LcdEn=0;LcdEn=1;   //仿真才需要此语句,实际硬件中不需要
+  22   2        }     
+  23   1      } 
+  24          unsigned char  LcdDataSwap(unsigned char input)
+  25          {
+  26   1          unsigned char uiRet = 0;
+  27   1          unsigned char uiLoop = 0;
+  28   1          for(uiLoop = 0;uiLoop < 8;uiLoop++)
+  29   1          {
+  30   2              uiRet <<= 1;
+  31   2              if((input & (0x01 << uiLoop)) != 0)
+  32   2              {
+  33   3                  uiRet |= 0x01;
+  34   3              }
+  35   2          }
+  36   1          return uiRet;
+  37   1      }
+  38          void LCD_Write(bit style, unsigned char input)   //写数据1/命令0
+  39          {
+  40   1        LcdRs=style;
+  41   1        LcdRw=0;    
+  42   1        DBPort = LcdDataSwap(input);  
+  43   1        LcdEn=1;delay(20);LcdEn=0;      
+  44   1        LCD_Wait(); 
+  45   1      }
+  46          void bspLcdGpioInit()
+  47          {
+  48   1        GPIO_InitTypeDef GPIO_InitStruct;
+  49   1        
+  50   1        GPIO_InitStruct.GPIO_Pin = GPIO_Pin_All;
+  51   1        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Standard_IO;
+  52   1        
+  53   1        GPIO_Init(GPIO_P2,&GPIO_InitStruct);
+C51 COMPILER V9.54   BSPLCD1602                                                            12/23/2019 22:43:58 PAGE 2   
+
+  54   1        
+  55   1        GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_6 | GPIO_Pin_5;
+  56   1        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Standard_IO;
+  57   1        
+  58   1        GPIO_Init(GPIO_P0,&GPIO_InitStruct);
+  59   1        
+  60   1      }
+  61          void LCD_Initial(void)        //初始化LCD
+  62          {
+  63   1        bspLcdGpioInit();
+  64   1        
+  65   1        LCD_Write(0,0x38);       //8位数据端口,2行显示,5*7点阵
+  66   1        delay(300);
+  67   1        LCD_Write(0,0x0c);           //显示模式
+  68   1        LCD_Write(0,0x01);           //清屏
+  69   1        LCD_Write(0,0x06);           //输入模式
+  70   1      }
+  71          void bsp_LcdClean()
+  72          {
+  73   1        LCD_Write(0,0x01); 
+  74   1      }
+  75          void GotoXY(unsigned char x, unsigned char y)  //移动光标到指定位置
+  76          {
+  77   1        if(y==0)  LCD_Write(0,0x80|x);
+  78   1        if(y==1)    LCD_Write(0,0xc0|x);
+  79   1      }
+  80          void PrintByte(unsigned char bytes)
+  81          {
+  82   1        LCD_Write(1,bytes);
+  83   1      }
+  84          void Print(unsigned char *str)   //指定坐标输出字符串
+  85          {
+  86   1        while(*str)  LCD_Write(1,*str++);
+  87   1      }
+  88          
+  89          void Print_num(unsigned int display_data,unsigned char uiBit)
+  90          {
+  91   1        if(uiBit == 1)
+  92   1        {
+  93   2          LCD_Write(1,display_data+0x30);
+  94   2        }
+  95   1        else if(uiBit == 2)
+  96   1        {
+  97   2          LCD_Write(1,display_data/10+0x30);
+  98   2          LCD_Write(1,display_data%10/1+0x30);  
+  99   2        }
+ 100   1        else if(uiBit == 3)
+ 101   1        {
+ 102   2          LCD_Write(1,display_data/100+0x30);
+ 103   2          LCD_Write(1,display_data%100/10+0x30);  
+ 104   2          LCD_Write(1,display_data%10/1+0x30);  
+ 105   2        }
+ 106   1        else if(uiBit == 4)
+ 107   1        {
+ 108   2          LCD_Write(1,display_data/1000+0x30);
+ 109   2          LCD_Write(1,display_data%1000/100+0x30);  
+ 110   2          LCD_Write(1,display_data%100/10+0x30);  
+ 111   2          LCD_Write(1,display_data%10/1+0x30);    
+ 112   2        }
+ 113   1        else
+ 114   1        {
+ 115   2          LCD_Write(1,display_data/10000+0x30);
+C51 COMPILER V9.54   BSPLCD1602                                                            12/23/2019 22:43:58 PAGE 3   
+
+ 116   2          LCD_Write(1,display_data%10000/1000+0x30);  
+ 117   2          LCD_Write(1,display_data%1000/100+0x30);  
+ 118   2          LCD_Write(1,display_data%100/10+0x30);
+ 119   2          LCD_Write(1,display_data%10/1+0x30);
+ 120   2        }
+ 121   1          
+ 122   1      }
+ 123          void Print_Float(float datas,unsigned char ucBit1,unsigned char ucBit2)
+ 124          {
+ 125   1        char buf[16] = {0};
+ 126   1        sprintf(buf,"%02.1f",datas);
+ 127   1        Print(buf);
+ 128   1      }
+*** WARNING C280 IN LINE 123 OF Src\bspLcd1602.C: 'ucBit1': unreferenced local variable
+*** WARNING C280 IN LINE 123 OF Src\bspLcd1602.C: 'ucBit2': unreferenced local variable
+ 129          
+ 130          void Set_cursorXY(unsigned char x,unsigned char y) //在指定位置光标闪烁
+ 131          {
+ 132   1        LCD_Write(0,0x0f);
+ 133   1        GotoXY(x,y);
+ 134   1      }
+ 135          void GUI_donghua1(unsigned char x,unsigned char y)
+ 136          {
+ 137   1        /*
+ 138   1          ----------------------------------
+ 139   1          |......                  |
+ 140   1          |                |
+ 141   1          ----------------------------------
+ 142   1        */
+ 143   1        unsigned char i=0;
+ 144   1        GotoXY(x,y);
+ 145   1        for(i=0;i<6;i++)
+ 146   1        { 
+ 147   2          delay_ms(100);    
+ 148   2          Print(".");
+ 149   2          delay_ms(100);
+ 150   2        }
+ 151   1        GotoXY(x,y);
+ 152   1        Print("      ");  
+ 153   1      }
+ 154          void GUI_Progress_Bar(unsigned char x,unsigned char y,unsigned char Resolution)
+ 155          {
+ 156   1        unsigned char i=0,geshu=16;
+ 157   1        GotoXY(x,y);
+ 158   1        if(Resolution<=100)
+ 159   1        {
+ 160   2          
+ 161   2          for(i=0;i<Resolution/(100/geshu);i++)
+ 162   2          {
+ 163   3            delay_ms(300);
+ 164   3            Print("=");
+ 165   3          }
+ 166   2          Print_num(Resolution,1);
+ 167   2          //Print("%"); 
+ 168   2        }
+ 169   1      }
+ 170          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    884    ----
+   CONSTANT SIZE    =     34    ----
+C51 COMPILER V9.54   BSPLCD1602                                                            12/23/2019 22:43:58 PAGE 4   
+
+   XDATA SIZE       =   ----      38
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

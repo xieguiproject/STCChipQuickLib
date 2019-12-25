@@ -1,0 +1,143 @@
+C51 COMPILER V9.54   BSP_LOCALCTL                                                          04/12/2019 16:33:35 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSP_LOCALCTL
+OBJECT MODULE PLACED IN .\Objects\bsp_LocalCtl.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bsp_LocalCtl.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Libraries\STC
+                    -15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bs
+                    -p_LocalCtl.lst) TABS(2) OBJECT(.\Objects\bsp_LocalCtl.obj)
+
+line level    source
+
+   1          #include "bsp_LocalCtl.h"
+   2          #include "stdio.h"
+   3          
+   4          
+   5          
+   6          uint16_t Low = 0;
+   7          bit   Jump_flag;
+   8          uint8_t Temp_addrl,Temp_addrh,Address_l,Address_h;
+   9          uint8_t cntint = 0; 
+  10          uint16_t IR_Key = 0;
+  11          uint32_t IR_IdCode = 0;//遥控器身份信息
+  12          bit   start_flag=0,IR_OVER;
+  13          uint16_t release_key; 
+  14          uint16_t RF_Value_Cnt;
+  15          
+  16          uint32_t RF_data;
+  17          uint16_t uiLocalKey = 0;
+  18          uint16_t uiKeyPaseTime = 0;
+  19          uint8_t  uiNewKeyFlg = 0;
+  20          void soft_decode();
+  21          uint16_t uiSoftCount = 0;
+  22          void soft_count()//接受吗
+  23          {
+  24   1        if(RF_Dat==0) 
+  25   1        { 
+  26   2          Low++;
+  27   2          if(Jump_flag)Jump_flag=0;   
+  28   2        }
+  29   1        else if(RF_Dat==1)  
+  30   1        {
+  31   2          if(!Jump_flag)
+  32   2          { 
+  33   3            Jump_flag=1;
+  34   3            soft_decode();
+  35   3            Low=0;
+  36   3          }
+  37   2        }
+  38   1        uiSoftCount++;
+  39   1        if(uiSoftCount > 5000)
+  40   1        {
+  41   2          uiSoftCount = 0;
+  42   2          LocalCmdDel();
+*** WARNING C206 IN LINE 42 OF Src\bsp_LocalCtl.c: 'LocalCmdDel': missing function-prototype
+  43   2        }
+  44   1      
+  45   1      }
+  46          
+  47          void soft_decode()
+  48          {
+  49   1        static uint8_t uiKeyFlg = 0;
+  50   1        if(start_flag==0)
+  51   1        {
+  52   2          if(( Low > _start_us_min ) && ( Low < _start_us_max ))  
+C51 COMPILER V9.54   BSP_LOCALCTL                                                          04/12/2019 16:33:35 PAGE 2   
+
+  53   2          {
+  54   3            start_flag=1;
+  55   3            cntint=0;
+  56   3            IR_Key=0;
+  57   3            RF_data=0;
+  58   3          }
+  59   2          else 
+  60   2          {
+  61   3            RF_Value_Cnt=0;
+  62   3            release_key++;
+  63   3            if(release_key>500)release_key=500;
+  64   3          }
+  65   2        }
+  66   1        else if((start_flag==1)&&(cntint<24))
+  67   1        {
+  68   2          if(( Low > _num0_us_min ) && ( Low < _num0_us_max ))
+  69   2          {
+  70   3            RF_data = RF_data<<1;
+  71   3            cntint++;
+  72   3          }
+  73   2          else if(( Low > _num1_us_min ) && ( Low < _num1_us_max ))   
+  74   2          {
+  75   3            RF_data=RF_data<<1;
+  76   3            RF_data|=1;
+  77   3            cntint++;
+  78   3          }
+  79   2          else 
+  80   2          {
+  81   3            start_flag=0;
+  82   3            cntint=0;
+  83   3          }
+  84   2        }
+  85   1      
+  86   1        if(cntint == 24)
+  87   1        {
+  88   2          release_key=0;
+  89   2          RF_Value_Cnt++;
+  90   2          if(RF_Value_Cnt>500)RF_Value_Cnt=500;
+  91   2      
+  92   2          cntint=0;
+  93   2          start_flag=0;
+  94   2          IR_Key = (uint8_t)(RF_data&0x0000000f);
+  95   2          
+  96   2          
+  97   2          if(uiLocalKey != IR_Key)
+  98   2          {
+  99   3            uiLocalKey = IR_Key;
+ 100   3            uiKeyPaseTime = 0;//按下按钮的时间计数器
+ 101   3            uiNewKeyFlg = 1;
+ 102   3          }
+ 103   2      
+ 104   2          uiKeyPaseTime++;//100ms
+ 105   2      
+ 106   2          Temp_addrl = (RF_data>>4)&0x000000ff; 
+ 107   2          Temp_addrh = (RF_data>>12)&0x000000ff;
+ 108   2          
+ 109   2          IR_OVER = 1;
+ 110   2          }
+ 111   1        
+ 112   1      }
+*** WARNING C280 IN LINE 49 OF Src\bsp_LocalCtl.c: 'uiKeyFlg': unreferenced local variable
+
+C51 COMPILER V9.54   BSP_LOCALCTL                                                          04/12/2019 16:33:35 PAGE 3   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    509    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     29    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

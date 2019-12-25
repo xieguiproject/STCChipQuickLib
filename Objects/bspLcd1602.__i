@@ -1,0 +1,1 @@
+"Src\bspLcd1602.C" LARGE OPTIMIZE (9,SPEED) BROWSE INCDIR(.\Libraries\STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bspLcd1602.lst) TABS (2) PREPRINT(.\Listings\bspLcd1602.i) OBJECT(.\Objects\bspLcd1602.obj)

@@ -1,0 +1,210 @@
+C51 COMPILER V9.54   BSPCCPINTERRUPT                                                       04/12/2019 16:33:34 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPCCPINTERRUPT
+OBJECT MODULE PLACED IN .\Objects\bspCCPInterrupt.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspCCPInterrupt.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Libraries\
+                    -STC15_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\bspCCPInterrupt.lst) TABS(2) OBJECT(.\Objects\bspCCPInterrupt.obj)
+
+line level    source
+
+   1          /***********************************************************************************
+   2           * 文 件 名   : bspCCPInterrupt.c
+   3           * 负 责 人   : xiegui
+   4           * 创建日期   : 2019年1月6日
+   5           * 文件描述   : stc15单片机CCP  扩展外部中断
+   6           * 版权说明   : Copyright (c) 2008-2019   xx xx xx xx 技术有限公司
+   7           * 其    他   : 
+   8           * 修改日志   : 
+   9          ***********************************************************************************/
+  10          #include "bspCCPInterrupt.h"
+*** WARNING C323 IN LINE 25 OF Src\bspUsart.h: newline expected, extra characters found
+*** WARNING C323 IN LINE 12 OF Src\bspEspAtWifi.h: newline expected, extra characters found
+*** WARNING C323 IN LINE 64 OF Src\bspEspAtWifi.h: newline expected, extra characters found
+  11          #include "bspUsart.h"
+  12          uint8_t uiIntFlg = 0;
+  13          uint8_t uiIntCount = 0;
+  14          
+  15          //ccp中断
+  16          /*****************************************************************************
+  17           * 函 数 名  : CCP0Interrupt
+  18           * 负 责 人  : xiegui
+  19           * 创建日期  : 2019年1月6日
+  20           * 函数功能  : 中断入口地址
+  21                          从中需要获取出电机的方向和计算出电机运转的角度信息。
+  22           * 输入参数  : 无
+  23           * 输出参数  : 无
+  24           * 返 回 值  : 
+  25           * 调用关系  : 
+  26           * 其    它  : 
+  27          
+  28          *****************************************************************************/
+  29          
+  30          void CCP0Interrupt() interrupt 7 using 1
+  31          {
+  32   1          
+  33   1        float  fTemp1 = 0;
+  34   1          if(CCF0 == 1)
+  35   1          {
+  36   2              CCF0 = 0;
+  37   2              //上一个中断为P3.5，本次中断依然为P3.5，这样的现象超过5次则代表P3.6中断故障
+  38   2              if(uiIntFlg == 1)
+  39   2              {
+  40   3                  //P3.6故障
+  41   3                  if(uiIntCount >= 5)
+  42   3                  {
+  43   4                      uiIntCount = 0;
+  44   4                      mdSysParm.uiErrorCode = IntSensorError1;
+  45   4                      BpsMotoCtrl(0,0,0);
+  46   4                      BspUsartSendStr(1,"1Moto Only One Int\r\n");
+  47   4                  }
+  48   3                  else
+  49   3                  {
+  50   4                      uiIntCount++;
+C51 COMPILER V9.54   BSPCCPINTERRUPT                                                       04/12/2019 16:33:34 PAGE 2   
+
+  51   4                  }
+  52   3              }
+  53   2              else
+  54   2              {
+  55   3                  uiIntCount = 0;
+  56   3              }
+  57   2              uiIntFlg  = 1;
+  58   2              
+  59   2          }
+  60   1          else if(CCF1 == 1)
+  61   1          {
+  62   2              CCF1 = 0;
+  63   2              if(uiIntFlg == 2)
+  64   2              {
+  65   3                  if(uiIntCount >= 5)
+  66   3                  {
+  67   4                      uiCount = 0;
+  68   4                      mdSysParm.uiErrorCode = IntSensorError2;
+  69   4                      BpsMotoCtrl(0,0,0);
+  70   4                      BspUsartSendStr(1,"2Moto Only One Int\r\n");
+  71   4                  }
+  72   3                  else
+  73   3                  {
+  74   4                      uiIntCount++;
+  75   4                  }
+  76   3              }
+  77   2              else
+  78   2              {
+  79   3                  uiCount = 0;
+  80   3              }
+  81   2              uiIntFlg = 2;
+  82   2          }
+  83   1          /*计算距离 电机转1圈，对应两个中断，则一个中断对应180度
+  84   1                  运转的距离 = 中断个数 / 每一圈的中断个数 / 
+  85   1                  一圈的周长 / 360度则代表一度对应的距离
+  86   1         经过验证，内部转148圈，外部转1圈。        
+  87   1          */
+  88   1       #if 0
+                  fTemp1 = (1 / MotoIntNum * 360); 
+                  fTemp1 = fTemp1 * (Permimeter / 360.0) / RetardScale;
+              #else
+  92   1        //Perimeter 外部电机转一圈的周长 * 148 对应 外部1cm对应内部移动了
+  93   1        //最终换算出一个中断对应外部转动的距离
+  94   1        fTemp1 = Perimeter / RetardScale / MotoIntNum;
+  95   1      #endif
+  96   1                  /*电机运转的位移*/
+  97   1          //根据方向计算当前运转的距离，此方向为正转，根据用户定义的方向计算//默认为正方向
+  98   1          if(mdSysParm.uiDirFromUser)
+  99   1          {
+ 100   2              if(mdSysParm.ImportantParms.fCenterCm >= mdSysParm.ImportantParms.fTagetCm)
+ 101   2              {
+ 102   3                  //当前的运转距离已经到达目标设定位置，则需要停止电机。
+ 103   3                  BpsMotoCtrl(0,0,0);
+ 104   3                  //写入当前运转的位置到FLASH中，以免电机断电后需要重新设定参数
+ 105   3                  SystemParmFush();
+ 106   3              }
+ 107   2              else
+ 108   2              {
+ 109   3                  if(mdSysParm.ImportantParms.fCenterCm < MAX_CM)
+ 110   3                  {
+ 111   4                      mdSysParm.ImportantParms.fCenterCm += fTemp1;
+ 112   4                  }
+C51 COMPILER V9.54   BSPCCPINTERRUPT                                                       04/12/2019 16:33:34 PAGE 3   
+
+ 113   3                  else
+ 114   3                  {
+ 115   4                      mdSysParm.ImportantParms.fCenterCm = MAX_CM;
+ 116   4                  }
+ 117   3              }
+ 118   2          }
+ 119   1          else
+ 120   1          {
+ 121   2              //反转
+ 122   2              if(mdSysParm.ImportantParms.fCenterCm <= mdSysParm.ImportantParms.fTagetCm)
+ 123   2              {
+ 124   3                  //当前的运转距离已经到达目标设定位置，则需要停止电机。
+ 125   3                  BpsMotoCtrl(0,0,0);
+ 126   3                  //写入当前运转的位置到FLASH中，以免电机断电后需要重新设定参数
+ 127   3                  SystemParmFush();
+ 128   3              }
+ 129   2              else
+ 130   2              {
+ 131   3                  if(mdSysParm.ImportantParms.fCenterCm > MIN_CM)
+ 132   3                  {
+ 133   4                      mdSysParm.ImportantParms.fCenterCm -= fTemp1;
+ 134   4                  }
+ 135   3                  else
+ 136   3                  {
+ 137   4                      mdSysParm.ImportantParms.fCenterCm = MIN_CM;
+ 138   4                  }
+ 139   3              }
+ 140   2          }
+ 141   1        
+ 142   1        
+ 143   1      }
+ 144          
+ 145          /*****************************************************************************
+ 146           * 函 数 名  : bspCCPInterruptInit
+ 147           * 负 责 人  : xiegui
+ 148           * 创建日期  : 2019年1月6日
+ 149           * 函数功能  : 初始化 扩展 外部中断
+ 150           * 输入参数  : 无
+ 151           * 输出参数  : 无
+ 152           * 返 回 值  : 
+ 153           * 调用关系  : 
+ 154           * 其    它  : 
+ 155          
+ 156          *****************************************************************************/
+ 157          void bspCCPInterruptInit()
+ 158          {
+ 159   1          ACC = P_SW1;
+ 160   1          ACC &= ~(CCP_S0 | CCP_S1);
+ 161   1          ACC |= CCP_S0;
+ 162   1          P_SW1 = ACC;
+ 163   1          /*设置CCP_S0 = 1 CCP_S1 = 0 引脚绑定再P3.5 P3.6 作为外部中断*/
+ 164   1      
+ 165   1          CCON = 0;
+ 166   1      
+ 167   1          CL = 0;
+ 168   1          CH = 0;
+ 169   1          CMOD = 0X00;//设置时钟源，静止定时器溢出中断
+ 170   1      
+ 171   1          CCAPM0 = 0X11;//P3.5上升沿触发
+ 172   1          CCAPM1 = 0X11;//P3.6上升沿触发
+ 173   1          
+ 174   1          CR =1;
+C51 COMPILER V9.54   BSPCCPINTERRUPT                                                       04/12/2019 16:33:34 PAGE 4   
+
+ 175   1      }
+ 176          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    472    ----
+   CONSTANT SIZE    =     42    ----
+   XDATA SIZE       =      2       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)

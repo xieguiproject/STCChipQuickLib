@@ -1,0 +1,8 @@
+---- GPIO_P4 Matches (7 in 6 files) ----
+bspKeyScanf.c (g:\stm32project\carctrlo114\code\controlboradcodefor51\src):	GPIO_Init(GPIO_P4,&GPIO_InitStruct);
+bspLed.c (g:\stm32project\carctrlo114\code\controlboradcodefor51\src):	GPIO_Init(GPIO_P4,&GPIO_InitStruct);
+bspLed.c (g:\stm32project\carctrlo114\code\controlboradcodefor51\src):	GPIO_Init(GPIO_P4,&GPIO_InitStruct);
+bsp_DigitalSensor.c (g:\stm32project\carctrlo114\code\controlboradcodefor51\src):	GPIO_Init(GPIO_P4,&GPIO_InitStruct);
+bsp_Speaker.c (g:\stm32project\carctrlo114\code\controlboradcodefor51\src):	GPIO_Init(GPIO_P4,&GPIO_InitStruct);
+Stc15xx_gpio.c (g:\stm32project\carctrlo114\code\controlboradcodefor51\libraries\stc15_stdperiph_driver\src):	if(GPIO_PX == GPIO_P4)
+Stc15xx_gpio.h (g:\stm32project\carctrlo114\code\controlboradcodefor51\libraries\stc15_stdperiph_driver\inc):#define	GPIO_P4			0x04

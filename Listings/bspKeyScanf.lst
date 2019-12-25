@@ -1,0 +1,125 @@
+C51 COMPILER V9.54   BSPKEYSCANF                                                           12/23/2019 22:45:42 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSPKEYSCANF
+OBJECT MODULE PLACED IN .\Objects\bspKeyScanf.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bspKeyScanf.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC1
+                    -5_StdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp
+                    -KeyScanf.lst) TABS(2) PREPRINT(.\Listings\bspKeyScanf.i) OBJECT(.\Objects\bspKeyScanf.obj)
+
+line level    source
+
+   1          #include "bspKeyScanf.h"
+   2          
+   3          /*****************************************************************************
+   4           * 函 数 名  : bspKeyScanfInit
+   5           * 负 责 人  : xiegui
+   6           * 创建日期  : 2019年1月6日
+   7           * 函数功能  : 按键初始化
+   8           * 输入参数  : 无
+   9           * 输出参数  : 无
+  10           * 返 回 值  : 
+  11           * 调用关系  : 
+  12           * 其    它  : 
+  13          
+  14          *****************************************************************************/
+  15          void bspKeyScanfInit()
+  16          {
+  17   1        GPIO_InitTypeDef GPIO_InitStruct;
+  18   1        
+  19   1        GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_6;
+  20   1        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Standard_IO;
+  21   1        
+  22   1        GPIO_Init(GPIO_P4,&GPIO_InitStruct);
+  23   1        
+  24   1        GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
+  25   1        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Standard_IO;
+  26   1        
+  27   1        GPIO_Init(GPIO_P5,&GPIO_InitStruct);
+  28   1        
+  29   1      }
+  30          uint8_t bspKeyScanf()
+  31          {
+  32   1          static uint8_t ucKey1,ucKey2,ucKey3,ucKey4;
+  33   1          uint8_t uiKeyValue = 0;
+  34   1          if(KEY1_PIN == 0)
+  35   1          {
+  36   2              ucKey1 = 1;
+  37   2          }
+  38   1          //Delay10ms();
+  39   1        //  Delay10ms();    
+  40   1          if(KEY1_PIN == 1 && ucKey1 == 1)
+  41   1          {
+  42   2            ucKey1 = 0;
+  43   2            uiKeyValue |= 0x01;
+  44   2          }
+  45   1          
+  46   1        if(KEY2_PIN == 0)
+  47   1          {
+  48   2              ucKey2 = 1;
+  49   2          }
+  50   1          //Delay10ms();
+  51   1        //  Delay10ms();    
+  52   1          if(KEY2_PIN == 1 && ucKey2 == 1)
+  53   1          {
+C51 COMPILER V9.54   BSPKEYSCANF                                                           12/23/2019 22:45:42 PAGE 2   
+
+  54   2            ucKey2 = 0;
+  55   2            uiKeyValue |= 0x02;
+  56   2          }
+  57   1          
+  58   1          if(KEY3_PIN == 0)
+  59   1          {
+  60   2              ucKey3 = 1;
+  61   2          }
+  62   1         // Delay10ms();
+  63   1        //  Delay10ms();    
+  64   1          if(KEY3_PIN == 1 && ucKey3 == 1)
+  65   1          {
+  66   2            ucKey3 = 0;
+  67   2            uiKeyValue |= 0x04;
+  68   2          }
+  69   1          
+  70   1          if(KEY4_PIN == 0)
+  71   1          {
+  72   2              ucKey4 = 1;
+  73   2          }
+  74   1          //Delay10ms();
+  75   1          //Delay10ms();    
+  76   1          if(KEY4_PIN == 1 && ucKey4 == 1)
+  77   1          {
+  78   2            ucKey4 = 0;
+  79   2            uiKeyValue |= 0x08;
+  80   2          }
+  81   1        return uiKeyValue;
+  82   1      }
+  83          /*****************************************************************************
+  84           * 函 数 名  : 按键轮询处理函数
+  85           * 负 责 人  : xiegui
+  86           * 创建日期  : 2019年1月6日
+  87           * 函数功能  : 按键初始化
+  88           * 输入参数  : 无
+  89           * 输出参数  : 无
+  90           * 返 回 值  : 
+  91           * 调用关系  : 
+  92           * 其    它  : 
+  93          
+  94          *****************************************************************************/
+  95          void bspKeyScanfDel()
+  96          {
+  97   1          
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    137    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

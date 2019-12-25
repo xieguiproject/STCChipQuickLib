@@ -1,0 +1,96 @@
+C51 COMPILER V9.54   BSP_7SEG                                                              12/24/2019 15:53:13 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BSP_7SEG
+OBJECT MODULE PLACED IN .\Objects\bsp_7seg.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE Src\bsp_7seg.c LARGE OPTIMIZE(9,SPEED) BROWSE INCDIR(.\Libraries\STC15_S
+                    -tdPeriph_Driver\inc;.\Libraries\STC15_StdPeriph_Driver\src;.\Libraries\CMSIS) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_7s
+                    -eg.lst) TABS(2) PREPRINT(.\Listings\bsp_7seg.i) OBJECT(.\Objects\bsp_7seg.obj)
+
+line level    source
+
+   1          #include "bsp_7seg.h"
+   2          
+   3          uint8_t ucDisplayBuf[MAX_7SEG_NUM] = {0};
+   4          
+   5          uint8_t code ucSegCode[16] = {0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d, 0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,
+             -0x71};
+   6          
+   7          void bsp_7SegInit()
+   8          {
+   9   1        GPIO_InitTypeDef GPIO_InitStruct;
+  10   1        
+  11   1        GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 ;
+  12   1        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Standard_IO;
+  13   1        
+  14   1        GPIO_Init(GPIO_P0,&GPIO_InitStruct);
+  15   1        
+  16   1      }
+  17          //数码管数据的写方式
+  18          void bsp_7SegDataWrite(uint8_t ucData)
+  19          {
+  20   1        L74xx595_Wirte_One_Byte(ucData);
+  21   1      }
+  22          //数码管位选写入方式
+  23          void bsp_7SegSegmentWrite()
+  24          {
+  25   1        static uint8_t ucBitCode = 0;
+  26   1        
+  27   1        uint8_t ucDat = P0;
+  28   1        
+  29   1        ucDat &= ~(0x1e);
+  30   1        
+  31   1        switch(ucBitCode)
+  32   1        {
+  33   2          case 0:
+  34   2          {
+  35   3            ucDat |= 0x02;
+  36   3          };break;
+  37   2          case 1:
+  38   2          {
+  39   3            ucDat |= 0x04;
+  40   3          };break;
+  41   2          case 2:
+  42   2          {
+  43   3            ucDat |= 0x08;
+  44   3          }
+  45   2          case 3:
+  46   2          {
+  47   3            ucDat |= 0x10;
+  48   3          }
+  49   2        }
+  50   1        P0 = ucDat;
+  51   1        ucBitCode++;
+  52   1        if(ucBitCode == MAX_7SEG_NUM)
+C51 COMPILER V9.54   BSP_7SEG                                                              12/24/2019 15:53:13 PAGE 2   
+
+  53   1        {
+  54   2          ucBitCode = 0;
+  55   2        }
+  56   1      }
+  57          void bsp_7SegProcessDel()
+  58          {
+  59   1        uint8_t ucLoop = 0;
+  60   1        
+  61   1        for(ucLoop = 0;ucLoop < MAX_7SEG_NUM;ucLoop++)
+  62   1        {
+  63   2          bsp_7SegDataWrite(ucSegCode[ucDisplayBuf[ucLoop]]);//送段选码
+  64   2          bsp_7SegSegmentWrite();                             //送位选码
+  65   2          Delay10ms();                                      //延时
+  66   2          bsp_7SegDataWrite(0x00);                          //消影子
+  67   2        }
+  68   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    135    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =      5       3
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
